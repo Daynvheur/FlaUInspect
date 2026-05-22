@@ -14,77 +14,67 @@ using Application = System.Windows.Application;
 namespace FlaUInspect.Views;
 
 public partial class StartupWindow {
+	private const int MF_BYCOMMAND = 0x00000000;
+	private const int SC_CLOSE = 0xF060;
+	private readonly InternalLogger _logger;
 
-    private const int GWL_STYLE = -16;
-    private const int WS_SYSMENU = 0x80000;
-    private const int MF_BYCOMMAND = 0x00000000;
-    private const int SC_CLOSE = 0xF060;
-    private readonly InternalLogger _logger;
+	public StartupWindow(InternalLogger logger) {
+		_logger = logger;
+		InitializeComponent();
+	}
 
-    public StartupWindow(InternalLogger logger) {
-        _logger = logger;
-        InitializeComponent();
-    }
+	private void Uia2Click(object sender, RoutedEventArgs e) => OpenProcessWindow(new UIA2Automation());
 
-    private void Uia2Click(object sender, RoutedEventArgs e) {
-        OpenProcessWindow(new UIA2Automation());
-    }
+	private void Uia3Click(object sender, RoutedEventArgs e) => OpenProcessWindow(new UIA3Automation());
 
-    private void Uia3Click(object sender, RoutedEventArgs e) {
-        OpenProcessWindow(new UIA3Automation());
-    }
+	private void OpenProcessWindow(AutomationBase automationBase) {
+		if (ProcessesListBox.SelectedItem is not ProcessWindowInfo processWindowInfo)
+			return;
 
-    private void OpenProcessWindow(AutomationBase automationBase) {
-        if (ProcessesListBox.SelectedItem is ProcessWindowInfo processWindowInfo) {
-            HoverMouseInitialize();
-            ProcessViewModel processViewModel = new (automationBase, processWindowInfo.ProcessId, processWindowInfo.MainWindowHandle, _logger);
+		HoverMouseInitialize();
+		ProcessViewModel processViewModel = new(automationBase, processWindowInfo.ProcessId, processWindowInfo.MainWindowHandle, _logger);
 
-            ProcessWindow processWindow = new () { DataContext = processViewModel };
-            processWindow.Show();
-            Task.Run(() => processViewModel.Initialize());
-            Hide();
-        }
-    }
+		ProcessWindow processWindow = new() { DataContext = processViewModel };
+		processWindow.Show();
+		_ = Task.Run(processViewModel.Initialize);
+		Hide();
+	}
 
-    private void HoverMouseInitialize() {
-        if (!HoverManager.IsInitialized) {
-            HoverManager.Initialize(new UIA3Automation(), () => App.FlaUiAppOptions.HoverOverlay(), _logger);
-        }
-    }
+	private static void HoverMouseInitialize() {
+		if (!HoverManager.IsInitialized)
+			HoverManager.Initialize(new UIA3Automation(), () => App.FlaUiAppOptions.HoverOverlay());
+	}
 
-    private void CloseClick(object sender, RoutedEventArgs e) {
-        if (Application.Current.Windows.Count == 1) {
-            Close();
-        } else {
-            Hide();
-        }
-    }
+	private void CloseClick(object sender, RoutedEventArgs e) {
+		if (Application.Current.Windows.Count == 1)
+			Close();
+		else
+			Hide();
+	}
 
-    [DllImport("user32.dll")]
-    private static extern IntPtr GetSystemMenu(IntPtr hWnd, bool bRevert);
+	[LibraryImport("user32.dll")]
+	private static partial IntPtr GetSystemMenu(IntPtr hWnd, [MarshalAs(UnmanagedType.Bool)] bool bRevert);
 
-    [DllImport("user32.dll")]
-    private static extern bool RemoveMenu(IntPtr hMenu, uint uPosition, uint uFlags);
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool RemoveMenu(IntPtr hMenu, uint uPosition, uint uFlags);
 
-    protected override void OnSourceInitialized(EventArgs e) {
-        base.OnSourceInitialized(e);
-        IntPtr hwnd = new WindowInteropHelper(this).Handle;
-        IntPtr hMenu = GetSystemMenu(hwnd, false);
-        RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
-    }
+	protected override void OnSourceInitialized(EventArgs e) {
+		base.OnSourceInitialized(e);
+		var hwnd = new WindowInteropHelper(this).Handle;
+		var hMenu = GetSystemMenu(hwnd, false);
+		_ = RemoveMenu(hMenu, SC_CLOSE, MF_BYCOMMAND);
+	}
 
-    private void PickWindowButton_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
-        if (sender is Button { Command: { } command } && command.CanExecute(null)) {
-            command.Execute(null);
-        }
-    }
+	private void PickWindowButton_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
+		if (sender is Button { Command: { } command } && command.CanExecute(null))
+			command.Execute(null);
+	}
 
-    private void ProcessesListBoxOnMouseDoubleClick(object sender, MouseButtonEventArgs e) {
-        if (Uia2RadioButton.IsChecked == true) {
-            OpenProcessWindow(new UIA2Automation());
-        } else if (Uia3RadioButton.IsChecked == true) {
-            OpenProcessWindow(new UIA3Automation());
-        }
-    }
-
+	private void ProcessesListBoxOnMouseDoubleClick(object sender, MouseButtonEventArgs e) {
+		if (Uia2RadioButton.IsChecked == true)
+			OpenProcessWindow(new UIA2Automation());
+		else if (Uia3RadioButton.IsChecked == true)
+			OpenProcessWindow(new UIA3Automation());
+	}
 }
