@@ -15,22 +15,31 @@ namespace FlaUInspect.ViewModels;
 
 public class ProcessViewModel : ObservableObject {
 
+	private readonly PatternItemsFactory _patternItemsFactory;
+	private readonly AutomationElement _rootElement;
 	private readonly AutomationBase _automation;
 	private readonly InternalLogger _logger;
 	private readonly int _processId;
 	private readonly ITreeWalker _treeWalker;
 	private readonly IntPtr _windowHandle;
-	private ObservableCollection<ElementPatternItem>? _elementPatterns;
 	private FocusTrackingMode? _focusTrackingMode;
-	private PatternItemsFactory? _patternItemsFactory;
-	private AutomationElement? _rootElement;
 	private ElementOverlay _trackHighlighterOverlay;
+	private static readonly ElementPatternItem[] _defaultPatternItems = [
+																		new ElementPatternItem("Identification", PatternItemsFactory.Identification, true, true),
+																	new ElementPatternItem("Details", PatternItemsFactory.Details, true, true),
+																	new ElementPatternItem("Pattern Support", PatternItemsFactory.PatternSupport, true, true)
+																	];
 
 	public ProcessViewModel(AutomationBase automation, int processId, IntPtr mainWindowHandle, InternalLogger logger) {
 		_logger = logger;
 		_automation = automation;
 		_processId = processId;
 		_windowHandle = mainWindowHandle;
+		_rootElement = _windowHandle == 0
+			? _automation.GetDesktop()
+			: _automation.FromHandle(_windowHandle);
+		_patternItemsFactory = new PatternItemsFactory(_automation);
+		ElementPatterns = GetDefaultPatternList();
 
 		_trackHighlighterOverlay = CreateTrackHighlighterOverlay();
 
@@ -86,12 +95,18 @@ public class ProcessViewModel : ObservableObject {
 			_focusTrackingMode = null;
 		});
 
-		CopyDetailsToClipboardCommand = new RelayCommand(_ => {
+		CopyDetailsToClipboardCommand = new RelayCommand(param => {
 			if (SelectedItem?.AutomationElement == null)
 				return;
 
 			try {
-				Clipboard.SetText(new XmlElementDetailsExporter().Export(ElementPatterns));
+				var depthMax = param switch {
+					int i => i,
+					string s when int.TryParse(s, out var i) => i,
+					_ => 0 // valeur par défaut (clic normal sur le bouton)
+				};
+				Clipboard.SetText(new XmlElementDetailsExporter().Export(this, depthMax));
+
 				CopiedNotificationRequested?.Invoke();
 			}
 			catch (Exception e) {
@@ -113,21 +128,21 @@ public class ProcessViewModel : ObservableObject {
 		private set => SetProperty(value);
 	}
 
-	public IEnumerable<ElementPatternItem> ElementPatterns {
-		get => _elementPatterns ?? Enumerable.Empty<ElementPatternItem>();
-		private set => SetProperty(ref _elementPatterns, value as ObservableCollection<ElementPatternItem>);
+	public ObservableCollection<ElementPatternItem> ElementPatterns {
+		get;
+		private set => SetProperty(ref field, value);
 	}
 
 	public ElementViewModel? SelectedItem {
 		get => GetProperty<ElementViewModel>();
 		set {
-			if (!SetProperty(value) || value == null)
+			if (!SetProperty(value))
 				return;
 
 			if (EnableHighLightSelectionMode)
 				TrackSelectedItem(value);
 
-			_ = Task.Run(() => ReadPatternsForSelectedItem(value.AutomationElement));
+			_ = Task.Run(() => ReadPatternsForSelectedItem(value?.AutomationElement));
 		}
 	}
 
@@ -163,7 +178,12 @@ public class ProcessViewModel : ObservableObject {
 
 	private static ElementOverlay CreateTrackHighlighterOverlay() => App.FlaUiAppOptions.SelectionOverlay() ?? App.FlaUiAppOptions.DefaultOverlay();
 
-	private void TrackSelectedItem(ElementViewModel item) {
+	private void TrackSelectedItem(ElementViewModel? item) {
+		if (item == null) {
+			_trackHighlighterOverlay?.Dispose();
+			return;
+		}
+
 		if (item.AutomationElement == null)
 			return;
 
@@ -189,8 +209,7 @@ public class ProcessViewModel : ObservableObject {
 		if (EnableFocusTrackingMode)
 			_focusTrackingMode?.Start();
 		else if (EnableHighLightSelectionMode) {
-			if (SelectedItem != null)
-				TrackSelectedItem(SelectedItem);
+			TrackSelectedItem(SelectedItem);
 		}
 		else if (EnableHoverMode)
 			HoverManager.Enable(_windowHandle);
@@ -200,12 +219,6 @@ public class ProcessViewModel : ObservableObject {
 	public event Action? CopiedNotificationRequested;
 
 	public void Initialize() {
-		_patternItemsFactory = new PatternItemsFactory(_automation);
-
-		_rootElement = _windowHandle == 0
-			? _automation.GetDesktop()
-			: _automation.FromHandle(_windowHandle);
-
 		ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger);
 
 		var topChildren = desktopViewModel.LoadChildren();
@@ -221,15 +234,15 @@ public class ProcessViewModel : ObservableObject {
 													   if (EnableFocusTrackingMode)
 														   ElementToSelectChanged(x);
 												   });
-
-		ElementPatterns = GetDefaultPatternList();
-		SelectedItem = Elements.Count == 0 ? null : Elements[0];
+		SelectedItem = desktopViewModel;
 
 		OnPropertyChanged(nameof(Elements));
 		OnPropertyChanged(nameof(ElementPatterns));
 	}
 
-	public void ElementToSelectChanged(AutomationElement? obj, bool forceExpand = false) {
+	public void ElementToSelectChanged(AutomationElement? obj, bool forceExpand = false) => SelectedItem = GetNextElementVm(forceExpand, GetPathToRoot(obj, forceExpand), Elements);
+
+	private Stack<AutomationElement> GetPathToRoot(AutomationElement? obj, bool forceExpand) {
 		Stack<AutomationElement> pathToRoot = new();
 
 		while (obj != null && obj.Properties.ProcessId == _processId) {
@@ -250,7 +263,10 @@ public class ProcessViewModel : ObservableObject {
 			}
 		}
 
-		IEnumerable<ElementViewModel> viewModels = Elements;
+		return pathToRoot;
+	}
+
+	private ElementViewModel? GetNextElementVm(bool forceExpand, Stack<AutomationElement> pathToRoot, IEnumerable<ElementViewModel> viewModels) {
 		ElementViewModel? nextElementVm = null;
 
 		while (pathToRoot.Count > 0) {
@@ -269,7 +285,7 @@ public class ProcessViewModel : ObservableObject {
 				break;
 		}
 
-		SelectedItem = nextElementVm;
+		return nextElementVm;
 	}
 
 	private ElementViewModel? FindElement(IEnumerable<ElementViewModel> viewModels, AutomationElement element) => viewModels.FirstOrDefault(el => {
@@ -286,39 +302,45 @@ public class ProcessViewModel : ObservableObject {
 		return false;
 	});
 
-	private ObservableCollection<ElementPatternItem> GetDefaultPatternList() => new(new[] {
-																	new ElementPatternItem("Identification", PatternItemsFactory.Identification, true, true),
-																	new ElementPatternItem("Details", PatternItemsFactory.Details, true, true),
-																	new ElementPatternItem("Pattern Support", PatternItemsFactory.PatternSupport, true, true)
-																}
-																.Concat(
-																	(_automation?.PatternLibrary.AllForCurrentFramework ?? [])
-																	.Select(x => new ElementPatternItem(x.Name, x.Name, true))));
-
 	private void ReadPatternsForSelectedItem(AutomationElement? selectedItemAutomationElement) {
-		if (SelectedItem?.AutomationElement == null || selectedItemAutomationElement == null || _patternItemsFactory == null)
-			return;
-
-		HashSet<PatternId> supportedPatterns = [.. selectedItemAutomationElement.GetSupportedPatterns()];
-
 		try {
-			var createdPattern = _patternItemsFactory.CreatePatternItemsForElement(selectedItemAutomationElement, supportedPatterns);
-
-			foreach (var elementPattern in ElementPatterns) {
-				elementPattern.Children = createdPattern.TryGetValue(elementPattern.PatternIdName, out var children)
-					? new ObservableCollection<PatternItem>(children)
-					: [];
-
-				elementPattern.IsVisible = elementPattern.Children.Any()
-					&& (elementPattern.PatternIdName == PatternItemsFactory.Identification
-						|| elementPattern.PatternIdName == PatternItemsFactory.Details
-						|| elementPattern.PatternIdName == PatternItemsFactory.PatternSupport
-						|| supportedPatterns.Any(x => x.Name.Equals(elementPattern.PatternIdName, StringComparison.Ordinal)));
-			}
+			_ = SetUpElementPatterns(selectedItemAutomationElement, ElementPatterns);
 		}
 		catch (Exception e) {
 			_logger?.LogError(e.ToString());
 		}
+	}
+
+	private ObservableCollection<ElementPatternItem> GetDefaultPatternList()
+	=> [
+		.. _defaultPatternItems,
+		.. _automation.PatternLibrary.AllForCurrentFramework
+			.Select(x => new ElementPatternItem(x.Name, x.Name, true)),
+	];
+
+	public ObservableCollection<ElementPatternItem>? GetElementPatterns(AutomationElement automationElement)
+		=> SetUpElementPatterns(automationElement, GetDefaultPatternList());
+
+	public ObservableCollection<ElementPatternItem>? SetUpElementPatterns(AutomationElement? selectedItemAutomationElement, ObservableCollection<ElementPatternItem> elementPatternsReference) {
+		if (selectedItemAutomationElement == null || elementPatternsReference == null)
+			return [];
+
+		HashSet<PatternId> supportedPatterns = [.. selectedItemAutomationElement.GetSupportedPatterns()];
+		var createdPattern = _patternItemsFactory.CreatePatternItemsForElement(selectedItemAutomationElement, supportedPatterns);
+
+		foreach (var elementPattern in elementPatternsReference) {
+			elementPattern.Children = createdPattern.TryGetValue(elementPattern.PatternIdName, out var children)
+				? new ObservableCollection<PatternItem>(children)
+				: [];
+
+			elementPattern.IsVisible = elementPattern.Children.Any()
+				&& (elementPattern.PatternIdName == PatternItemsFactory.Identification
+					|| elementPattern.PatternIdName == PatternItemsFactory.Details
+					|| elementPattern.PatternIdName == PatternItemsFactory.PatternSupport
+					|| supportedPatterns.Any(x => x.Name.Equals(elementPattern.PatternIdName, StringComparison.Ordinal)));
+		}
+
+		return elementPatternsReference;
 	}
 
 	public void ExpandElement(ElementViewModel sender) => ExpandElement(sender, Elements);

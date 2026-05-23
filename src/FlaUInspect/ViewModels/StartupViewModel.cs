@@ -126,7 +126,7 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 		get => GetProperty<bool>();
 		set {
 			if (SetProperty(value))
-				_ = Task.Run(async () => await Init());
+				_ = Task.Run(Init);
 		}
 	}
 

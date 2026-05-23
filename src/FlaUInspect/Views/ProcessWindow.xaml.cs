@@ -39,13 +39,11 @@ public partial class ProcessWindow : Window {
 	}
 
 	private void ProcessWindow_Closed(object? sender, EventArgs e) {
-		if (Application.Current.Windows.Count >= 1 && Application.Current.MainWindow is StartupWindow startupWindow) { // On WPF debug, there is a secondary AdornerWindow attached to the process
-																													   // this may be the case in other places aswell,
-																													   // there is no need to check for window singleness,
-																													   // only that at least the current MainWindow is the StartupWindow (Bug report)
+		if (Application.Current.Windows.Count >= 1 && Application.Current.MainWindow is StartupWindow) { // On WPF debug, there is a secondary AdornerWindow attached to the process
+																										 // this may be the case in other places aswell,
+																										 // there is no need to check for window singleness,
+																										 // only that at least the current MainWindow is the StartupWindow (Bug report)
 			ExecuteClosingCommand();
-
-			startupWindow.Show();
 		}
 	}
 
@@ -56,11 +54,11 @@ public partial class ProcessWindow : Window {
 			processViewModel.SelectedItem = e.NewValue as ElementViewModel;
 	}
 
-	private void InvokePatternActionHandler(object sender, RoutedEventArgs e) {
+	private async void InvokePatternActionHandler(object sender, RoutedEventArgs e) {
 		var vm = (sender as Button)?.DataContext as PatternItem;
 
 		if (vm?.Action != null)
-			_ = Task.Run(vm.Action);
+			await Task.Run(vm.Action);
 	}
 
 	private void TreeOnSelectionChanged(object sender, SelectionChangedEventArgs e) {

@@ -17,7 +17,7 @@ public partial class App {
 
 	public static InternalLogger Logger { get; } = new();
 
-	protected override void OnStartup(StartupEventArgs e) {
+	protected override async void OnStartup(StartupEventArgs e) {
 		base.OnStartup(e);
 
 		ServiceCollection services = new();
@@ -38,7 +38,7 @@ public partial class App {
 		//Preload light theme
 		SetTheme(flaUiAppSettings);
 
-		_ = Task.Run(startupViewModel.Init);
+		await Task.Run(startupViewModel.Init);
 	}
 
 	public static void ApplyAppOption(FlaUiAppSettings settings) {
