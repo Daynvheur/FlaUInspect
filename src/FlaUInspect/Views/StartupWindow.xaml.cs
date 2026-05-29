@@ -19,16 +19,16 @@ public partial class StartupWindow {
 		InitializeComponent();
 	}
 
-	private async void Uia2Click(object sender, RoutedEventArgs e) => await OpenProcessWindow(new UIA2Automation());
+	private async void Uia2Click(object sender, RoutedEventArgs e) => await OpenProcessWindow(new UIA2Automation(), ControlTreeViewWalkerCheckBox.IsChecked == true);
 
-	private async void Uia3Click(object sender, RoutedEventArgs e) => await OpenProcessWindow(new UIA3Automation());
+	private async void Uia3Click(object sender, RoutedEventArgs e) => await OpenProcessWindow(new UIA3Automation(), ControlTreeViewWalkerCheckBox.IsChecked == true);
 
-	private async Task OpenProcessWindow(AutomationBase automationBase) {
+	private async Task OpenProcessWindow(AutomationBase automationBase, bool controlWalker) {
 		if (ProcessesListBox.SelectedItem is not ProcessWindowInfo processWindowInfo)
 			return;
 
 		HoverMouseInitialize();
-		ProcessViewModel processViewModel = new(automationBase, processWindowInfo.ProcessId, processWindowInfo.MainWindowHandle, _logger);
+		ProcessViewModel processViewModel = new(automationBase, processWindowInfo.ProcessId, processWindowInfo.MainWindowHandle, _logger, controlWalker);
 
 		ProcessWindow processWindow = new() { DataContext = processViewModel };
 		processWindow.Show();
@@ -56,8 +56,8 @@ public partial class StartupWindow {
 
 	private async void ProcessesListBoxOnMouseDoubleClick(object sender, MouseButtonEventArgs e) {
 		if (Uia2RadioButton.IsChecked == true)
-			await OpenProcessWindow(new UIA2Automation());
+			await OpenProcessWindow(new UIA2Automation(), ControlTreeViewWalkerCheckBox.IsChecked == true);
 		else if (Uia3RadioButton.IsChecked == true)
-			await OpenProcessWindow(new UIA3Automation());
+			await OpenProcessWindow(new UIA3Automation(), ControlTreeViewWalkerCheckBox.IsChecked == true);
 	}
 }

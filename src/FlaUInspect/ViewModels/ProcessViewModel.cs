@@ -30,11 +30,14 @@ public class ProcessViewModel : ObservableObject {
 																	new ElementPatternItem("Pattern Support", PatternItemsFactory.PatternSupport, true, true)
 																	];
 
-	public ProcessViewModel(AutomationBase automation, int processId, IntPtr mainWindowHandle, InternalLogger logger) {
+	public ProcessViewModel(AutomationBase automation, int processId, IntPtr mainWindowHandle, InternalLogger logger, bool controlWalker = true) : this(automation, processId, mainWindowHandle, logger, controlWalker ? automation.TreeWalkerFactory.GetControlViewWalker() : automation.TreeWalkerFactory.GetRawViewWalker()) { }
+
+	public ProcessViewModel(AutomationBase automation, int processId, IntPtr mainWindowHandle, InternalLogger logger, ITreeWalker treeWalker) {
 		_logger = logger;
 		_automation = automation;
 		_processId = processId;
 		_windowHandle = mainWindowHandle;
+		_treeWalker = treeWalker;
 		_rootElement = _windowHandle == 0
 			? _automation.GetDesktop()
 			: _automation.FromHandle(_windowHandle);
@@ -53,8 +56,6 @@ public class ProcessViewModel : ObservableObject {
 										 ElementToSelectChanged(x);
 								 });
 		HoverManager.Disable(_windowHandle);
-
-		_treeWalker = _automation.TreeWalkerFactory.GetControlViewWalker();
 
 		Elements = [];
 
