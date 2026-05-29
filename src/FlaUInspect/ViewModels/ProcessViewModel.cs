@@ -208,9 +208,8 @@ public class ProcessViewModel : ObservableObject {
 
 		if (EnableFocusTrackingMode)
 			_focusTrackingMode?.Start();
-		else if (EnableHighLightSelectionMode) {
+		else if (EnableHighLightSelectionMode)
 			TrackSelectedItem(SelectedItem);
-		}
 		else if (EnableHoverMode)
 			HoverManager.Enable(_windowHandle);
 	}
@@ -245,7 +244,7 @@ public class ProcessViewModel : ObservableObject {
 	private Stack<AutomationElement> GetPathToRoot(AutomationElement? obj, bool forceExpand) {
 		Stack<AutomationElement> pathToRoot = new();
 
-		while (obj != null && obj.Properties.ProcessId == _processId) {
+		while (obj?.Properties.ProcessId == _processId) {
 			// Break on circular relationship (should not happen?)
 			if (pathToRoot.Contains(obj) || obj.Equals(_rootElement))
 				break;
