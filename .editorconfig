@@ -2,7 +2,7 @@ root = true
 
 # All files
 [*]
-indent_style = space
+indent_style = tab
 dotnet_style_readonly_field = true:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 dotnet_style_coalesce_expression = true:warning
@@ -21,8 +21,6 @@ dotnet_style_prefer_compound_assignment = true:suggestion
 dotnet_style_prefer_simplified_interpolation = true:warning
 dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
 dotnet_style_namespace_match_folder = true:suggestion
-tab_width = 4
-indent_size = 4
 dotnet_style_operator_placement_when_wrapping = beginning_of_line
 end_of_line = crlf
 dotnet_style_allow_multiple_blank_lines_experimental = false:suggestion
@@ -323,10 +321,6 @@ resharper_suggest_var_or_type_elsewhere_highlighting = hint
 resharper_suggest_var_or_type_simple_types_highlighting = hint
 resharper_use_object_or_collection_initializer_highlighting = hint
 
-# Xml files
-[*.xml]
-indent_size = 2
-
 [*.cs]
 #### Styles de nommage ####
 
@@ -334,7 +328,7 @@ indent_size = 2
 
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = warning
 dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
-dotnet_naming_rule.interface_should_be_begins_with_i.style = i_upper_camel_case_style
+dotnet_naming_rule.interface_should_be_begins_with_i.style = pascal_case
 
 dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.types_should_be_pascal_case.symbols = types
@@ -346,29 +340,11 @@ dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
 # Spécifications de symboles
 
-dotnet_naming_symbols.interface.applicable_kinds = interface
-dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.interface.required_modifiers =
-
-dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
-dotnet_naming_symbols.types.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
-dotnet_naming_symbols.types.required_modifiers =
-
 dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, method
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.non_field_members.required_modifiers =
 
 # Styles de nommage
-
-dotnet_naming_style.begins_with_i.required_prefix = I
-dotnet_naming_style.begins_with_i.required_suffix =
-dotnet_naming_style.begins_with_i.word_separator =
-dotnet_naming_style.begins_with_i.capitalization = pascal_case
-
-dotnet_naming_style.pascal_case.required_prefix =
-dotnet_naming_style.pascal_case.required_suffix =
-dotnet_naming_style.pascal_case.word_separator =
-dotnet_naming_style.pascal_case.capitalization = pascal_case
 
 dotnet_naming_style.pascal_case.required_prefix =
 dotnet_naming_style.pascal_case.required_suffix =
@@ -453,26 +429,6 @@ csharp_using_directive_placement = outside_namespace:warning
 csharp_indent_labels = flush_left
 csharp_space_around_binary_operators = before_and_after
 
-[*.vb]
-visual_basic_preferred_modifier_order = Partial,Default,Private,Protected,Public,Friend,NotOverridable,Overridable,MustOverride,Overloads,Overrides,MustInherit,NotInheritable,Static,Shared,Shadows,ReadOnly,WriteOnly,Dim,Const,WithEvents,Widening,Narrowing,Custom,Async:suggestion:suggestion
-visual_basic_style_prefer_isnot_expression = true:suggestion
-visual_basic_style_prefer_simplified_object_creation = true:suggestion
-#### Styles de nommage ####
-
-# Règles de nommage
-
-dotnet_naming_rule.interface_should_be_commence_par_i.severity = suggestion
-dotnet_naming_rule.interface_should_be_commence_par_i.symbols = interface
-dotnet_naming_rule.interface_should_be_commence_par_i.style = commence_par_i
-
-dotnet_naming_rule.types_should_be_casse_pascal.severity = suggestion
-dotnet_naming_rule.types_should_be_casse_pascal.symbols = types
-dotnet_naming_rule.types_should_be_casse_pascal.style = casse_pascal
-
-dotnet_naming_rule.membres_autres_que_des_champs_should_be_casse_pascal.severity = suggestion
-dotnet_naming_rule.membres_autres_que_des_champs_should_be_casse_pascal.symbols = membres_autres_que_des_champs
-dotnet_naming_rule.membres_autres_que_des_champs_should_be_casse_pascal.style = casse_pascal
-
 # Spécifications de symboles
 
 dotnet_naming_symbols.interface.applicable_kinds = interface
@@ -482,37 +438,6 @@ dotnet_naming_symbols.interface.required_modifiers =
 dotnet_naming_symbols.types.applicable_kinds = class, struct, interface, enum
 dotnet_naming_symbols.types.applicable_accessibilities = public, friend, private, protected, protected_friend, private_protected
 dotnet_naming_symbols.types.required_modifiers =
-
-dotnet_naming_symbols.membres_autres_que_des_champs.applicable_kinds = property, event, method
-dotnet_naming_symbols.membres_autres_que_des_champs.applicable_accessibilities = public, friend, private, protected, protected_friend, private_protected
-dotnet_naming_symbols.membres_autres_que_des_champs.required_modifiers =
-
-# Styles de nommage
-
-dotnet_naming_style.commence_par_i.required_prefix = I
-dotnet_naming_style.commence_par_i.required_suffix =
-dotnet_naming_style.commence_par_i.word_separator =
-dotnet_naming_style.commence_par_i.capitalization = pascal_case
-
-dotnet_naming_style.casse_pascal.required_prefix =
-dotnet_naming_style.casse_pascal.required_suffix =
-dotnet_naming_style.casse_pascal.word_separator =
-dotnet_naming_style.casse_pascal.capitalization = pascal_case
-
-dotnet_naming_style.casse_pascal.required_prefix =
-dotnet_naming_style.casse_pascal.required_suffix =
-dotnet_naming_style.casse_pascal.word_separator =
-dotnet_naming_style.casse_pascal.capitalization = pascal_case
-
-[*.{appxmanifest,axml,config,cql,csproj,dbml,discomap,dtd,jsproj,lsproj,njsproj,nuspec,proj,props,resw,resx,sql,StyleCop,targets,tasks,vbproj,xml,xsd}]
-indent_style = tab
-indent_size = 2
-tab_width = 2
-
-[*.{asax,ascx,aspx,axaml,cs,cshtml,htm,html,master,paml,razor,skin,vb,xaml,xamlx,xoml}]
-indent_style = tab
-indent_size = 4
-tab_width = 4
 
 [*.{cs,vb}]
 dotnet_separate_import_directive_groups = false
