@@ -195,7 +195,7 @@
             </Grid>
         </DockPanel>
         <Grid Background="#cc000000"
-              Visibility="{Binding DialogContent, Converter={StaticResource NullToVisibilityConverter}}">
+			  Visibility="{Binding DialogContent, Converter={StaticResource NullToVisibilityConverter}, FallbackValue=Hidden}">
             <Border Margin="96"
                     Background="{DynamicResource PrimaryWindowBackgroundBrush}"
                     CornerRadius="6">
