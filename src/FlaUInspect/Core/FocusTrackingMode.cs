@@ -1,4 +1,5 @@
-﻿using FlaUI.Core;
+﻿using System.Linq.Expressions;
+using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.EventHandlers;
 using Application = System.Windows.Application;
@@ -22,8 +23,14 @@ public class FocusTrackingMode(AutomationBase? automation, Action<AutomationElem
 	private void OnFocusChanged(AutomationElement? automationElement) {
 		// Skip items in the current process
 		// Like Inspect itself or the overlay window
-		if (automationElement?.Properties.ProcessId == Environment.ProcessId)
+		try {
+			if (automationElement?.Properties.ProcessId.IsSupported == true && automationElement.Properties.ProcessId == Environment.ProcessId)
+				return;
+		}
+		catch(Exception) {
+			// Silent fail
 			return;
+		}
 
 		if (!Equals(_currentFocusedElement, automationElement)) {
 			_currentFocusedElement = automationElement;

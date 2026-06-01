@@ -245,7 +245,7 @@ public class ProcessViewModel : ObservableObject {
 	private Stack<AutomationElement> GetPathToRoot(AutomationElement? obj, bool forceExpand) {
 		Stack<AutomationElement> pathToRoot = new();
 
-		while (obj?.Properties.ProcessId == _processId) {
+		while (obj?.Properties.ProcessId.IsSupported == true && obj.Properties.ProcessId == _processId) {
 			// Break on circular relationship (should not happen?)
 			if (pathToRoot.Contains(obj) || obj.Equals(_rootElement))
 				break;
