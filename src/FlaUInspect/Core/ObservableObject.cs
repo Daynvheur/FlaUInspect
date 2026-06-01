@@ -15,7 +15,7 @@ public abstract class ObservableObject : INotifyPropertyChanged {
 	protected T? GetProperty<T>([CallerMemberName] string? propertyName = null) {
 		ArgumentNullException.ThrowIfNull(propertyName);
 
-		return _backingFieldValues.TryGetValue(propertyName, out var value) ? (T)value! : default;
+		return _backingFieldValues.TryGetValue(propertyName, out var value) ? (T?)value : default;
 	}
 
 	/// <summary>

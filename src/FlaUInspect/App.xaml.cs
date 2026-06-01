@@ -1,7 +1,5 @@
-﻿using System.Drawing;
-using System.IO;
+﻿using System.IO;
 using System.Windows;
-using FlaUInspect.Core;
 using FlaUInspect.Core.Logger;
 using FlaUInspect.Settings;
 using FlaUInspect.ViewModels;
@@ -45,33 +43,16 @@ public partial class App {
 		// Apply theme
 		Current.Dispatcher.Invoke(() => SetTheme(settings));
 
-		if (settings is null) return;
-
-		ThicknessConverter converter = new();
-		var cloneSetting = (FlaUiAppSettings)settings.Clone();
-
-		FlaUiAppOptions.HoverOverlay = cloneSetting.HoverOverlay != null
-			? (() => new ElementOverlay(
-				new ElementOverlayConfiguration(cloneSetting.HoverOverlay.Size,
-												(Thickness)(converter.ConvertFromString(cloneSetting.HoverOverlay.Margin) ?? new()),
-												ColorTranslator.FromHtml(cloneSetting.HoverOverlay.OverlayColor),
-												ElementOverlay.GetRectangleFactory(cloneSetting.HoverOverlay.OverlayMode))))
+		FlaUiAppOptions.HoverOverlay = settings.HoverOverlay != null
+			? (() => new(settings.HoverOverlay))
 			: FlaUiAppOptions.DefaultOverlay;
 
-		FlaUiAppOptions.SelectionOverlay = cloneSetting.SelectionOverlay != null
-			? (() => new ElementOverlay(
-				new ElementOverlayConfiguration(cloneSetting.SelectionOverlay.Size,
-												(Thickness)(converter.ConvertFromString(cloneSetting.SelectionOverlay.Margin) ?? new()),
-												ColorTranslator.FromHtml(cloneSetting.SelectionOverlay.OverlayColor),
-												ElementOverlay.GetRectangleFactory(cloneSetting.SelectionOverlay.OverlayMode))))
+		FlaUiAppOptions.SelectionOverlay = settings.SelectionOverlay != null
+			? (() => new(settings.SelectionOverlay))
 			: FlaUiAppOptions.DefaultOverlay;
 
-		FlaUiAppOptions.PickOverlay = cloneSetting.PickOverlay != null
-			? (() => new ElementOverlay(
-				new ElementOverlayConfiguration(cloneSetting.PickOverlay.Size,
-												(Thickness)(converter.ConvertFromString(cloneSetting.PickOverlay.Margin) ?? new()),
-												ColorTranslator.FromHtml(cloneSetting.PickOverlay.OverlayColor),
-												ElementOverlay.GetRectangleFactory(cloneSetting.PickOverlay.OverlayMode))))
+		FlaUiAppOptions.PickOverlay = settings.PickOverlay != null
+			? (() => new(settings.PickOverlay))
 			: FlaUiAppOptions.DefaultOverlay;
 	}
 

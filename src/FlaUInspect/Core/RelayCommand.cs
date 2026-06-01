@@ -9,12 +9,12 @@ namespace FlaUInspect.Core;
 /// </summary>
 public class RelayCommand(Action<object?> methodToExecute, Func<object, bool>? canExecuteEvaluator = null) : ICommand {
 	[DebuggerStepThrough]
-	public bool CanExecute(object? parameter) => parameter == null || canExecuteEvaluator == null || canExecuteEvaluator.Invoke(parameter);
+	public bool CanExecute(object? parameter) => parameter == null || canExecuteEvaluator?.Invoke(parameter) != false;
 
 	public event EventHandler? CanExecuteChanged {
 		add => CommandManager.RequerySuggested += value;
 		remove => CommandManager.RequerySuggested -= value;
 	}
 
-	public void Execute(object? parameter) => methodToExecute.Invoke(parameter);
+	public void Execute(object? parameter) => methodToExecute(parameter);
 }

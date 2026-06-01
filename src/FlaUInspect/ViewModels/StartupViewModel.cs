@@ -30,9 +30,9 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 
 	public StartupViewModel() {
 		IsWindowedOnly = true;
-		RefreshCommand = new AsyncRelayCommand(Init);
+		RefreshCommand = new AsyncRelayCommand(_ => Init());
 
-		PickCommand = new AsyncRelayCommand(async () => {
+		PickCommand = new AsyncRelayCommand(async _ => {
 			using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
 			var hwnd = await PickWindowAsync(cts.Token);
 			SelectedProcess = Processes.FirstOrDefault(x => x.MainWindowHandle == hwnd);
@@ -52,22 +52,19 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 		});
 
 		CloseSettingCommand = new RelayCommand(_ => {
-			if (DialogContent is IDialogViewModel { CanClose: true } closableViewModel) {
-				closableViewModel.Close();
-				DialogContent = null;
-			}
+			((IDialogViewModel)DialogContent!).Close();
+			DialogContent = null;
 		},
 											   _ => DialogContent is IDialogViewModel { CanClose: true });
 
 		SaveSettingCommand = new RelayCommand(_ => {
-			if (DialogContent is IDialogViewModel { CanClose: true } closableViewModel) {
-				var settingsViewModel = DialogContent as ISettingViewModel;
-				closableViewModel.Save();
-				DialogContent = null;
+			((IDialogViewModel)DialogContent!).Save();
 
-				if (settingsViewModel != null)
-					App.ApplyAppOption(settingsViewModel.Settings.Current);
-			}
+			var settingsViewModel = DialogContent as ISettingViewModel;
+			DialogContent = null;
+
+			if (settingsViewModel != null)
+				App.ApplyAppOption(settingsViewModel.Settings.Current);
 		},
 											  _ => DialogContent is IDialogViewModel { CanClose: true });
 		AboutCommand = new RelayCommand(_ => DialogContent = new AboutViewModel());
@@ -285,14 +282,15 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 	}
 
 	protected virtual void Dispose(bool disposing) {
-		if (!_disposedValue) {
-			if (disposing) {
-				_defaultAutomation.Dispose();
-				_topWindowOverlay?.Dispose();
-				_topWindowOverlay = null;
-			}
-			_disposedValue = true;
+		if (_disposedValue)
+			return;
+
+		if (disposing) {
+			_defaultAutomation.Dispose();
+			_topWindowOverlay?.Dispose();
+			_topWindowOverlay = null;
 		}
+		_disposedValue = true;
 	}
 
 	public void Dispose() {

@@ -59,7 +59,7 @@ public class ProcessViewModel : ObservableObject {
 
 		Elements = [];
 
-		RefreshCommand = new AsyncRelayCommand(async () => await Task.Run(Initialize));
+		RefreshCommand = new AsyncRelayCommand(async _ => await Task.Run(Initialize));
 		CaptureSelectedItemCommand = new RelayCommand(_ => {
 			if (SelectedItem?.AutomationElement == null)
 				return;
@@ -150,7 +150,7 @@ public class ProcessViewModel : ObservableObject {
 	public bool EnableHoverMode {
 		get => GetProperty<bool>();
 		set {
-			_ = SetProperty(value);
+			_ = GetProperty<bool>() && value ? SetProperty(false) : SetProperty(value);
 			SetMode();
 		}
 	}
@@ -158,7 +158,7 @@ public class ProcessViewModel : ObservableObject {
 	public bool EnableHighLightSelectionMode {
 		get => GetProperty<bool>();
 		set {
-			_ = SetProperty(value);
+			_ = GetProperty<bool>() && value ? SetProperty(false) : SetProperty(value);
 			SetMode();
 		}
 	}
@@ -172,7 +172,7 @@ public class ProcessViewModel : ObservableObject {
 	public bool EnableFocusTrackingMode {
 		get => GetProperty<bool>();
 		set {
-			_ = SetProperty(value);
+			_ = GetProperty<bool>() && value ? SetProperty(false) : SetProperty(value);
 			SetMode();
 		}
 	}
@@ -204,8 +204,8 @@ public class ProcessViewModel : ObservableObject {
 		_trackHighlighterOverlay?.Dispose();
 		_focusTrackingMode?.Stop();
 
-		if (new[] { EnableHoverMode, EnableHighLightSelectionMode, EnableFocusTrackingMode }.Count(x => x) != 1)
-			return;
+		//if (new[] { EnableHoverMode, EnableHighLightSelectionMode, EnableFocusTrackingMode }.Count(x => x) != 1)
+		//	return;
 
 		if (EnableFocusTrackingMode)
 			_focusTrackingMode?.Start();
@@ -382,14 +382,10 @@ public class ProcessViewModel : ObservableObject {
 		if (node is null || parent is null)
 			return false;
 
-		var p = node.Parent;
+		do {
+			node = node.Parent;
+		} while (node != null && node != parent);
 
-		while (p is not null) {
-			if (p == parent)
-				return true;
-
-			p = p.Parent;
-		}
-		return false;
+		return node == parent;
 	}
 }

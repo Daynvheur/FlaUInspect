@@ -3,19 +3,18 @@ using System.Windows.Input;
 namespace FlaUInspect.Core;
 
 public class AsyncRelayCommand : ObservableObject, ICommand {
-	private readonly Func<bool>? _canExecute;
-	private readonly Func<Task> _execute;
+	private readonly Func<object?, bool>? _canExecute;
+	private readonly Func<object?, Task> _execute;
 
 	/// <summary>Initializes a new instance of the <see cref="AsyncRelayCommand"/> class. </summary>
 	/// <param name="execute">The function to execute. </param>
-	public AsyncRelayCommand(Func<Task> execute)
-		: this(execute, null) {
+	public AsyncRelayCommand(Func<object?, Task> execute) : this(execute, null) {
 	}
 
 	/// <summary>Initializes a new instance of the <see cref="AsyncRelayCommand"/> class. </summary>
 	/// <param name="execute">The function. </param>
 	/// <param name="canExecute">The predicate to check whether the function can be executed. </param>
-	public AsyncRelayCommand(Func<Task> execute, Func<bool>? canExecute) {
+	public AsyncRelayCommand(Func<object?, Task> execute, Func<object?, bool>? canExecute) {
 		ArgumentNullException.ThrowIfNull(execute);
 
 		_execute = execute;
@@ -32,36 +31,20 @@ public class AsyncRelayCommand : ObservableObject, ICommand {
 	}
 
 	/// <summary>Gets a value indicating whether the command can execute in its current state. </summary>
-	public bool CanExecute => !IsRunning && (_canExecute == null || _canExecute());
+	public bool CanExecute(object? parameter) => !IsRunning && (_canExecute?.Invoke(parameter) != false);
 
 	/// <summary>Occurs when changes occur that affect whether or not the command should execute. </summary>
 	public event EventHandler? CanExecuteChanged;
 
-	void ICommand.Execute(object? parameter) => Execute();
-
-	bool ICommand.CanExecute(object? parameter) => CanExecute;
-
 	/// <summary>Defines the method to be called when the command is invoked. </summary>
-	protected async void Execute() {
-		var task = _execute();
+	async void ICommand.Execute(object? parameter) {
+		var task = _execute(parameter);
+		if (task == null)
+			return;
 
-		if (task != null) {
-			IsRunning = true;
-			await task;
-			IsRunning = false;
-		}
-	}
-
-	/// <summary>Gets a value indicating whether the command can execute in its current state. </summary>
-	/// <summary>Tries to execute the command by checking the <see cref="CanExecute"/> property 
-	/// and executes the command only when it can be executed. </summary>
-	/// <returns>True if command has been executed; false otherwise. </returns>
-	public bool TryExecute() {
-		if (!CanExecute)
-			return false;
-
-		Execute();
-		return true;
+		IsRunning = true;
+		await task;
+		IsRunning = false;
 	}
 
 	/// <summary>Triggers the CanExecuteChanged event and a property changed event on the CanExecute property. </summary>

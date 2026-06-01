@@ -18,24 +18,20 @@ public partial class ProcessWindow : Window {
 	private void MainWindow_Loaded(object sender, EventArgs e) {
 		if (DataContext is ProcessViewModel processViewModel) {
 			processViewModel.CopiedNotificationRequested += ShowCopiedNotification;
-			processViewModel.CopiedNotificationCurrentElementSaveStateRequested += ShowCopiedNotificationCurrentElementSaveStateRequested;
+			processViewModel.CopiedNotificationCurrentElementSaveStateRequested += ShowCopiedNotificationCurrentElementSaveState;
 		}
 	}
 
-	private async void ShowCopiedNotification() {
-		CopiedNotificationGrid.Visibility = Visibility.Visible;
-		DoubleAnimation animation = new(1, 0, TimeSpan.FromSeconds(1));
-		CopiedNotificationGrid.BeginAnimation(OpacityProperty, animation);
-		await Task.Delay(1000);
-		CopiedNotificationGrid.Visibility = Visibility.Collapsed;
-	}
+	private void ShowCopiedNotification() => ShowCopiedNotification(CopiedNotificationGrid);
 
-	private async void ShowCopiedNotificationCurrentElementSaveStateRequested() {
-		CopiedNotificationCurrentElementSaveStateGrid.Visibility = Visibility.Visible;
+	private void ShowCopiedNotificationCurrentElementSaveState() => ShowCopiedNotification(CopiedNotificationCurrentElementSaveStateGrid);
+
+	private static async void ShowCopiedNotification(Grid ShowCopiedNotification) {
+		ShowCopiedNotification.Visibility = Visibility.Visible;
 		DoubleAnimation animation = new(1, 0, TimeSpan.FromSeconds(1));
-		CopiedNotificationCurrentElementSaveStateGrid.BeginAnimation(OpacityProperty, animation);
+		ShowCopiedNotification.BeginAnimation(OpacityProperty, animation);
 		await Task.Delay(1000);
-		CopiedNotificationCurrentElementSaveStateGrid.Visibility = Visibility.Collapsed;
+		ShowCopiedNotification.Visibility = Visibility.Collapsed;
 	}
 
 	private void ProcessWindow_Closed(object? sender, EventArgs e) {

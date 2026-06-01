@@ -3,10 +3,13 @@ using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Windows;
 using FlaUI.Core.Overlay;
+using FlaUInspect.Settings;
 
 namespace FlaUInspect.Core;
 
 public partial class ElementOverlay(ElementOverlayConfiguration configuration) : IDisposable {
+	public ElementOverlay(OverlaySettings HoverOverlay) : this(new ElementOverlayConfiguration(HoverOverlay)) { }
+
 	private OverlayRectangleForm[] _overlayRectangleFormList = [];
 
 	public ElementOverlayConfiguration Configuration { get; } = configuration;
@@ -15,26 +18,6 @@ public partial class ElementOverlay(ElementOverlayConfiguration configuration) :
 		Hide();
 		GC.SuppressFinalize(this);
 	}
-
-	public static Func<ElementOverlayConfiguration, Rectangle, Rectangle[]> GetRectangleFactory(string mode) => mode.ToLower(CultureInfo.InvariantCulture) switch {
-		"fill" => FillRectangleFactory,
-		"border" => BoundRectangleFactory,
-		_ => BoundRectangleFactory
-	};
-
-	public static Rectangle[] FillRectangleFactory(ElementOverlayConfiguration config, Rectangle rectangle) => [
-			new Rectangle(rectangle.X - (int)config.Margin.Left,
-						  rectangle.Y - (int)config.Margin.Top,
-						  rectangle.Width + (int)config.Margin.Right,
-						  rectangle.Height + (int)config.Margin.Bottom)
-		];
-
-	public static Rectangle[] BoundRectangleFactory(ElementOverlayConfiguration config, Rectangle rectangle) => [
-			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, config.Size, rectangle.Height + (int)config.Margin.Bottom),
-			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, rectangle.Width + (int)config.Margin.Right, config.Size),
-			new Rectangle(rectangle.X + rectangle.Width - config.Size + (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, config.Size, rectangle.Height + (int)config.Margin.Bottom),
-			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y + rectangle.Height - config.Size + (int)config.Margin.Right, rectangle.Width + (int)config.Margin.Right, config.Size)
-		];
 
 	public void Hide() {
 		foreach (var overlayRectangleForm in _overlayRectangleFormList) {
@@ -50,7 +33,7 @@ public partial class ElementOverlay(ElementOverlayConfiguration configuration) :
 
 	public void Show(Rectangle rectangle) {
 		var color1 = Color.FromArgb(255, Configuration.Color.R, Configuration.Color.G, Configuration.Color.B);
-		var rectangles = Configuration.RectangleFactory?.Invoke(Configuration, rectangle) ?? BoundRectangleFactory(Configuration, rectangle);
+		var rectangles = Configuration.RectangleFactory?.Invoke(Configuration, rectangle) ?? ElementOverlayConfiguration.BoundRectangleFactory(Configuration, rectangle);
 
 		List<OverlayRectangleForm> rectangleForms = [];
 
@@ -84,4 +67,26 @@ public partial class ElementOverlay(ElementOverlayConfiguration configuration) :
 	private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 }
 
-public record ElementOverlayConfiguration(int Size, Thickness Margin, Color Color, Func<ElementOverlayConfiguration, Rectangle, Rectangle[]>? RectangleFactory = null);
+public record ElementOverlayConfiguration(int Size, Thickness Margin, Color Color, Func<ElementOverlayConfiguration, Rectangle, Rectangle[]>? RectangleFactory = null) {
+	public ElementOverlayConfiguration(OverlaySettings HoverOverlay) : this(HoverOverlay.Size,
+												(Thickness)(new ThicknessConverter().ConvertFromString(HoverOverlay.Margin) ?? new()),
+												ColorTranslator.FromHtml(HoverOverlay.OverlayColor),
+												GetRectangleFactory(HoverOverlay.OverlayMode)) { }
+
+	public static Func<ElementOverlayConfiguration, Rectangle, Rectangle[]> GetRectangleFactory(string mode) => mode.ToLower(CultureInfo.InvariantCulture) switch {
+		"fill" => FillRectangleFactory,
+		"border" => BoundRectangleFactory,
+		_ => BoundRectangleFactory
+	};
+
+	public static Rectangle[] FillRectangleFactory(ElementOverlayConfiguration config, Rectangle rectangle) => [
+			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, rectangle.Width + (int)config.Margin.Right, rectangle.Height + (int)config.Margin.Bottom)
+		];
+
+	public static Rectangle[] BoundRectangleFactory(ElementOverlayConfiguration config, Rectangle rectangle) => [
+			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, config.Size, rectangle.Height + (int)config.Margin.Bottom),
+			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, rectangle.Width + (int)config.Margin.Right, config.Size),
+			new Rectangle(rectangle.X + rectangle.Width - config.Size + (int)config.Margin.Left, rectangle.Y - (int)config.Margin.Top, config.Size, rectangle.Height + (int)config.Margin.Bottom),
+			new Rectangle(rectangle.X - (int)config.Margin.Left, rectangle.Y + rectangle.Height - config.Size + (int)config.Margin.Right, rectangle.Width + (int)config.Margin.Right, config.Size)
+		];
+}
