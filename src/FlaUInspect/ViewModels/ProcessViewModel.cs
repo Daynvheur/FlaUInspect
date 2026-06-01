@@ -180,7 +180,7 @@ public class ProcessViewModel : ObservableObject {
 	private static ElementOverlay CreateTrackHighlighterOverlay() => App.FlaUiAppOptions.SelectionOverlay() ?? App.FlaUiAppOptions.DefaultOverlay();
 
 	private void TrackSelectedItem(ElementViewModel? item) {
-		if (item == null) {
+		if (item is null) {
 			_trackHighlighterOverlay?.Dispose();
 			return;
 		}
@@ -219,11 +219,9 @@ public class ProcessViewModel : ObservableObject {
 	public event Action? CopiedNotificationRequested;
 
 	public void Initialize() {
-		ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger);
+		ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger, 2);
 
-		var topChildren = desktopViewModel.LoadChildren();
-
-		Elements = new ObservableCollection<ElementViewModel>(topChildren);
+		Elements = new ObservableCollection<ElementViewModel>(desktopViewModel.Children);
 
 		// Initialize hover
 		EnableHoverMode = false;
@@ -273,7 +271,7 @@ public class ProcessViewModel : ObservableObject {
 			var elementOnPath = pathToRoot.Pop();
 			nextElementVm = FindElement(viewModels, elementOnPath);
 
-			if (nextElementVm == null || (!forceExpand && nextElementVm.IsExpanded))
+			if (nextElementVm is null || (!forceExpand && nextElementVm.IsExpanded))
 				continue;
 
 			if (pathToRoot.Count != 0)
@@ -322,7 +320,7 @@ public class ProcessViewModel : ObservableObject {
 		=> SetUpElementPatterns(automationElement, GetDefaultPatternList());
 
 	public ObservableCollection<ElementPatternItem>? SetUpElementPatterns(AutomationElement? selectedItemAutomationElement, ObservableCollection<ElementPatternItem> elementPatternsReference) {
-		if (selectedItemAutomationElement == null || elementPatternsReference == null)
+		if (selectedItemAutomationElement is null || elementPatternsReference is null)
 			return [];
 
 		HashSet<PatternId> supportedPatterns = [.. selectedItemAutomationElement.GetSupportedPatterns()];
@@ -346,16 +344,18 @@ public class ProcessViewModel : ObservableObject {
 	public void ExpandElement(ElementViewModel sender) => ExpandElement(sender, Elements);
 
 	private static void ExpandElement(ElementViewModel sender, ObservableCollection<ElementViewModel> elements) {
-		var children = sender.LoadChildren();
-		children.Reverse();
-
 		var senderIndex = elements.IndexOf(sender);
-
 		if (senderIndex < 0)
 			return;
 
+		var children = sender.LoadChildren(1);
+
 		foreach (var child in children)
-			elements.Insert(senderIndex + 1, child);
+			// Check if not in tree before insert
+			// Note: .Contains does not check for .Equals
+			//if (!elements.Any(child.Equals))
+			if (!elements.Contains(child))
+				elements.Insert(senderIndex + 1, child);
 	}
 
 	public void CollapseElement(ElementViewModel sender) => CollapseElement(sender, Elements);
@@ -379,12 +379,12 @@ public class ProcessViewModel : ObservableObject {
 	}
 
 	private static bool IsDescendantOf(ElementViewModel? node, ElementViewModel? parent) {
-		if (node == null || parent == null)
+		if (node is null || parent is null)
 			return false;
 
 		var p = node.Parent;
 
-		while (p != null) {
+		while (p is not null) {
 			if (p == parent)
 				return true;
 
