@@ -70,12 +70,12 @@
 				<Setter Property="Margin" Value="4" />
 			</Style>
 
-			<!--<Style x:Key="ProcessRadioButtonStyle"
-				   BasedOn="{StaticResource {x:Type RibbonToggleCheckboxButtonStyle}}"
+			<Style x:Key="ProcessRibbonCheckButtonStyle"
+				   BasedOn="{StaticResource RibbonCheckButtonStyle}"
 				   TargetType="{x:Type ToggleButton}">
 				<Setter Property="Width" Value="{StaticResource ButtonWidth}" />
 				<Setter Property="Height" Value="{StaticResource ButtonHeight}" />
-			</Style>-->
+			</Style>
 
 			<Style x:Key="ViewBoxStyle"
 				   TargetType="Viewbox">
@@ -120,7 +120,7 @@
 
 			<ToggleButton
 						 IsChecked="{Binding EnableHoverMode}"
-						  Style="{StaticResource RibbonToggleButtonStyle}">
+						  Style="{StaticResource ProcessRibbonCheckButtonStyle}">
 				<ButtonBase.ToolTip>
 					<TextBlock>
 						Enable HoverMode (use Ctrl).<LineBreak />
@@ -133,7 +133,7 @@
 
 			<ToggleButton
 						 IsChecked="{Binding EnableHighLightSelectionMode}"
-						  Style="{StaticResource RibbonToggleButtonStyle}">
+						  Style="{StaticResource ProcessRibbonCheckButtonStyle}">
 				<ButtonBase.ToolTip>
 					<TextBlock>
 						Enable Select Mode.<LineBreak />
@@ -145,7 +145,7 @@
 			</ToggleButton>
 			<ToggleButton
 						 IsChecked="{Binding EnableFocusTrackingMode}"
-						  Style="{StaticResource RibbonToggleButtonStyle}">
+						  Style="{StaticResource ProcessRibbonCheckButtonStyle}">
 				<ButtonBase.ToolTip>
 					<TextBlock>
 						Focus Tracking.<LineBreak />

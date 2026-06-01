@@ -19,7 +19,7 @@ public class FocusTrackingMode(AutomationBase? automation, Action<AutomationElem
 			automation?.UnregisterFocusChangedEvent(_eventHandler);
 	}
 
-	private async void OnFocusChanged(AutomationElement? automationElement) {
+	private void OnFocusChanged(AutomationElement? automationElement) {
 		// Skip items in the current process
 		// Like Inspect itself or the overlay window
 		try {
@@ -35,7 +35,7 @@ public class FocusTrackingMode(AutomationBase? automation, Action<AutomationElem
 			_currentFocusedElement = automationElement;
 
 			if (automationElement != null)
-				await Application.Current.Dispatcher.Invoke(async () => onFocusChangedAction(automationElement));
+				Application.Current.Dispatcher.Invoke(() => onFocusChangedAction(automationElement));
 		}
 	}
 }

@@ -382,10 +382,10 @@ public class ProcessViewModel : ObservableObject {
 		if (node is null || parent is null)
 			return false;
 
-		do {
+		do
 			node = node.Parent;
-		} while (node != null && node != parent);
+		while (node is not null && node != parent);
 
-		return node == parent;
+		return node is not null && node == parent;
 	}
 }

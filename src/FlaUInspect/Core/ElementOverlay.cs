@@ -73,7 +73,7 @@ public record ElementOverlayConfiguration(int Size, Thickness Margin, Color Colo
 												ColorTranslator.FromHtml(HoverOverlay.OverlayColor),
 												GetRectangleFactory(HoverOverlay.OverlayMode)) { }
 
-	public static Func<ElementOverlayConfiguration, Rectangle, Rectangle[]> GetRectangleFactory(string mode) => mode.ToLower(CultureInfo.InvariantCulture) switch {
+	public static Func<ElementOverlayConfiguration, Rectangle, Rectangle[]> GetRectangleFactory(string? mode) => mode?.ToLower(CultureInfo.InvariantCulture) switch {
 		"fill" => FillRectangleFactory,
 		"border" => BoundRectangleFactory,
 		_ => BoundRectangleFactory

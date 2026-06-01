@@ -56,7 +56,8 @@
 		</Setter>
 	</Style>
 
-	<Style x:Key="RibbonToggleButtonStyle"
+	<Style x:Key="RibbonCheckButtonStyle" x:Name="RibbonCheckButtonStyle"
+		   BasedOn="{StaticResource {x:Type ToggleButton}}"
 	   TargetType="ToggleButton">
 		<Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
 		<Setter Property="BorderBrush" Value="{DynamicResource PrimaryBorderBrush}" />
@@ -74,9 +75,13 @@
 							BorderBrush="{TemplateBinding BorderBrush}"
 							BorderThickness="{TemplateBinding BorderThickness}">
 							<Grid>
-								<ContentPresenter HorizontalAlignment="Center"
-											  VerticalAlignment="Center"
-											  RecognizesAccessKey="True" />
+
+								<ContentPresenter x:Name="contentPresenter"
+										  Margin="{TemplateBinding Padding}"
+										  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+										  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+										  RecognizesAccessKey="True"
+										  SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
 								<Border x:Name="Marker"
 									Height="2"
 									Margin="0"
