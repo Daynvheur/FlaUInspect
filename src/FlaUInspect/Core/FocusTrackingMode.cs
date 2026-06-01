@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using FlaUI.Core;
+﻿using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.EventHandlers;
 using Application = System.Windows.Application;
@@ -27,7 +26,7 @@ public class FocusTrackingMode(AutomationBase? automation, Action<AutomationElem
 			if (automationElement?.Properties.ProcessId.IsSupported == true && automationElement.Properties.ProcessId == Environment.ProcessId)
 				return;
 		}
-		catch(Exception) {
+		catch (Exception) {
 			// Silent fail
 			return;
 		}
