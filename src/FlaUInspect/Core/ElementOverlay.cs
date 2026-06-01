@@ -38,8 +38,11 @@ public partial class ElementOverlay(ElementOverlayConfiguration configuration) :
 
 	public void Hide() {
 		foreach (var overlayRectangleForm in _overlayRectangleFormList) {
-			overlayRectangleForm.Hide();
-			overlayRectangleForm.Close();
+			try {
+				overlayRectangleForm.Hide();
+				overlayRectangleForm.Close();
+			}
+			catch (InvalidOperationException) { }
 			overlayRectangleForm.Dispose();
 		}
 		_overlayRectangleFormList = [];
