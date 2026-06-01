@@ -328,7 +328,7 @@
 
 					<Grid>
 						<DockPanel LastChildFill="True"
-								   Visibility="{Binding TreeViewControl.SelectedItem, Converter={StaticResource NullToVisibilityConverter}}">
+								   Visibility="{Binding SelectedItem, ElementName=TreeViewControl, Converter={StaticResource NullToVisibilityConverter}}">
 							<ScrollViewer>
 								<ItemsControl ItemsSource="{Binding ElementPatterns}">
 									<ItemsControl.ItemTemplate>
