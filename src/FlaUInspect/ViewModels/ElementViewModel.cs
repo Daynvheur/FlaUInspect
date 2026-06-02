@@ -62,19 +62,17 @@ public class ElementViewModel : ObservableObject {
 			return [];
 		}
 	}
+
 	public override bool Equals(object? obj) => Equals(obj as ElementViewModel);
 
 	public bool Equals(ElementViewModel? y) => y is not null
 		&& (ReferenceEquals(this, y)
 			|| (GetType() == y.GetType()
 				&& Level == y.Level
-				&& IsSelected == y.IsSelected
-				&& IsExpanded == y.IsExpanded
-				&& AutomationId == y.AutomationId
-				&& ControlType == y.ControlType
-				&& Name == y.Name));
+				&& AutomationElement == y.AutomationElement
+				&& Parent! == y.Parent!));
 
-	public override int GetHashCode() => (Level, IsSelected, IsExpanded, AutomationId, ControlType, Name).GetHashCode();
+	public override int GetHashCode() => (Level, AutomationId, ControlType, Name).GetHashCode();
 
 	public static bool operator ==(ElementViewModel lhs, ElementViewModel rhs) => lhs is null
 			? rhs is null

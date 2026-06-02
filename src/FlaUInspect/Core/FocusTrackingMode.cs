@@ -5,25 +5,26 @@ using Application = System.Windows.Application;
 
 namespace FlaUInspect.Core;
 
-public class FocusTrackingMode(AutomationBase? automation, Action<AutomationElement> onFocusChangedAction) {
+public class FocusTrackingMode(AutomationBase? automation, Func<AutomationElement, AutomationElement?> onFocusChangedAction) {
 	private AutomationElement? _currentFocusedElement;
 	private FocusChangedEventHandlerBase? _eventHandler;
 
 	public void Start()
 		// Might give problems because inspect is registered as well.
 		// MS recommends to call UIA commands on a thread outside a UI thread.
-		=> Task.Factory.StartNew(() => _eventHandler = automation?.RegisterFocusChangedEvent(OnFocusChanged));
+		=> _eventHandler = automation?.RegisterFocusChangedEvent(OnFocusChanged);
 
 	public void Stop() {
 		if (_eventHandler != null)
 			automation?.UnregisterFocusChangedEvent(_eventHandler);
+		automation?.UnregisterAllEvents();
 	}
 
 	private void OnFocusChanged(AutomationElement? automationElement) {
 		// Skip items in the current process
 		// Like Inspect itself or the overlay window
 		try {
-			if (automationElement?.Properties.ProcessId.IsSupported == true && automationElement.Properties.ProcessId == Environment.ProcessId)
+			if (automationElement?.Properties.ProcessId.IsSupported != true || automationElement.Properties.ProcessId == Environment.ProcessId)
 				return;
 		}
 		catch (Exception) {
@@ -32,10 +33,7 @@ public class FocusTrackingMode(AutomationBase? automation, Action<AutomationElem
 		}
 
 		if (!Equals(_currentFocusedElement, automationElement)) {
-			_currentFocusedElement = automationElement;
-
-			if (automationElement != null)
-				Application.Current.Dispatcher.Invoke(() => onFocusChangedAction(automationElement));
+			_currentFocusedElement = Application.Current.Dispatcher.Invoke(() => onFocusChangedAction(automationElement));
 		}
 	}
 }

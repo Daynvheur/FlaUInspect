@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Drawing.Imaging;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using FlaUI.Core;
@@ -53,7 +54,7 @@ public class ProcessViewModel : ObservableObject {
 		HoverManager.AddListener(_windowHandle,
 								 x => {
 									 if (EnableHoverMode)
-										 ElementToSelectChanged(x);
+										 _ = ElementToSelectChanged(x);
 								 });
 		HoverManager.Disable(_windowHandle);
 
@@ -180,7 +181,7 @@ public class ProcessViewModel : ObservableObject {
 	private static ElementOverlay CreateTrackHighlighterOverlay() => App.FlaUiAppOptions.SelectionOverlay() ?? App.FlaUiAppOptions.DefaultOverlay();
 
 	private void TrackSelectedItem(ElementViewModel? item) {
-		if (item is null) {
+		if (item is null || item.Level <= 0) {
 			_trackHighlighterOverlay?.Dispose();
 			return;
 		}
@@ -204,9 +205,6 @@ public class ProcessViewModel : ObservableObject {
 		_trackHighlighterOverlay?.Dispose();
 		_focusTrackingMode?.Stop();
 
-		//if (new[] { EnableHoverMode, EnableHighLightSelectionMode, EnableFocusTrackingMode }.Count(x => x) != 1)
-		//	return;
-
 		if (EnableFocusTrackingMode)
 			_focusTrackingMode?.Start();
 		else if (EnableHighLightSelectionMode)
@@ -223,22 +221,16 @@ public class ProcessViewModel : ObservableObject {
 
 		Elements = new ObservableCollection<ElementViewModel>(desktopViewModel.Children);
 
-		// Initialize hover
-		EnableHoverMode = false;
-
 		// Initialize focus tracking
-		_focusTrackingMode = new FocusTrackingMode(_automation,
-												   x => {
-													   if (EnableFocusTrackingMode)
-														   ElementToSelectChanged(x);
-												   });
+		_focusTrackingMode ??= new FocusTrackingMode(_automation,
+													   x => EnableFocusTrackingMode ? ElementToSelectChanged(x)?.AutomationElement : null);
 		SelectedItem = desktopViewModel;
 
 		OnPropertyChanged(nameof(Elements));
 		OnPropertyChanged(nameof(ElementPatterns));
 	}
 
-	public void ElementToSelectChanged(AutomationElement? obj, bool forceExpand = false) => SelectedItem = GetNextElementVm(forceExpand, GetPathToRoot(obj, forceExpand), Elements);
+	public ElementViewModel? ElementToSelectChanged(AutomationElement? obj, bool forceExpand = false) => SelectedItem = GetNextElementVm(forceExpand, GetPathToRoot(obj, forceExpand), Elements);
 
 	private Stack<AutomationElement> GetPathToRoot(AutomationElement? obj, bool forceExpand) {
 		Stack<AutomationElement> pathToRoot = new();
@@ -351,11 +343,12 @@ public class ProcessViewModel : ObservableObject {
 		var children = sender.LoadChildren(1);
 
 		foreach (var child in children)
-			// Check if not in tree before insert
-			// Note: .Contains does not check for .Equals
-			//if (!elements.Any(child.Equals))
 			if (!elements.Contains(child))
-				elements.Insert(senderIndex + 1, child);
+				try {
+					elements.Insert(++senderIndex, child);
+				}
+				catch (NotSupportedException) { }
+				catch (InvalidOperationException) { }
 	}
 
 	public void CollapseElement(ElementViewModel sender) => CollapseElement(sender, Elements);
