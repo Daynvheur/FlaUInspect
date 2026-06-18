@@ -266,8 +266,7 @@ public class ProcessViewModel : ObservableObject {
 			if (nextElementVm is null || (!forceExpand && nextElementVm.IsExpanded))
 				continue;
 
-			if (pathToRoot.Count != 0)
-				nextElementVm.IsExpanded = true;
+			nextElementVm.IsExpanded = true;
 
 			ExpandElement(nextElementVm);
 
@@ -343,7 +342,7 @@ public class ProcessViewModel : ObservableObject {
 		var children = sender.LoadChildren(1);
 
 		foreach (var child in children)
-			if (!elements.Contains(child))
+			if (!elements.Any(e => e.AutomationElement?.Equals(child.AutomationElement) == true))
 				try {
 					elements.Insert(++senderIndex, child);
 				}
