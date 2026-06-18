@@ -24,6 +24,28 @@
 			<converters:InvertBooleanConverter x:Key="InvertBooleanConverter" />
 			<converters:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
+			<Style TargetType="ListBoxItem">
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="ListBoxItem">
+							<Border x:Name="Bd"
+									Background="{TemplateBinding Background}"
+									Padding="{TemplateBinding Padding}">
+								<ContentPresenter />
+							</Border>
+							<ControlTemplate.Triggers>
+								<Trigger Property="IsMouseOver" Value="True">
+									<Setter TargetName="Bd" Property="Background" Value="{DynamicResource PickOverlayBrush}" />
+								</Trigger>
+								<Trigger Property="IsSelected" Value="True">
+									<Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionOverlayBrush}" />
+								</Trigger>
+							</ControlTemplate.Triggers>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
+			</Style>
+
 			<DataTemplate DataType="{x:Type viewModels:SettingsViewModel}">
 				<local:SettingsWindow />
 			</DataTemplate>

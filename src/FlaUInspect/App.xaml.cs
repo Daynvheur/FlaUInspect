@@ -1,10 +1,14 @@
-﻿using System.IO;
+﻿using System.Drawing;
+using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using FlaUInspect.Core.Logger;
 using FlaUInspect.Settings;
 using FlaUInspect.ViewModels;
 using FlaUInspect.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Color = System.Drawing.Color;
+using wColor = System.Windows.Media.Color;
 
 namespace FlaUInspect;
 
@@ -54,6 +58,21 @@ public partial class App {
 		FlaUiAppOptions.PickOverlay = settings.PickOverlay != null
 			? (() => new(settings.PickOverlay))
 			: FlaUiAppOptions.DefaultOverlay;
+
+		// Add overlay colors as application resources
+		Current.Dispatcher.Invoke(() => SetOverlayColors(settings));
+	}
+
+	private static void SetOverlayColors(FlaUiAppSettings settings) {
+		var pickColor = settings.PickOverlay != null
+			? ColorTranslator.FromHtml(settings.PickOverlay.OverlayColor)
+			: Color.Blue;
+		var selectionColor = settings.SelectionOverlay != null
+			? ColorTranslator.FromHtml(settings.SelectionOverlay.OverlayColor)
+			: Color.Blue;
+
+		Current.Resources["PickOverlayBrush"] = new SolidColorBrush(wColor.FromArgb(pickColor.A, pickColor.R, pickColor.G, pickColor.B));
+		Current.Resources["SelectionOverlayBrush"] = new SolidColorBrush(wColor.FromArgb(selectionColor.A, selectionColor.R, selectionColor.G, selectionColor.B));
 	}
 
 	private static void SetTheme(FlaUiAppSettings settings) {
