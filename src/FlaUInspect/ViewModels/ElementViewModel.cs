@@ -10,11 +10,12 @@ namespace FlaUInspect.ViewModels;
 public class ElementViewModel : ObservableObject {
 	private readonly ILogger? _logger;
 
-	public ElementViewModel(AutomationElement? automationElement, ElementViewModel? parent, int level, ILogger? logger, int loadSubChildren) {
+	public ElementViewModel(AutomationElement? automationElement, ElementViewModel? parent, int level, ILogger? logger, int loadSubChildren, bool isExpanded = false) {
 		Level = level;
 		_logger = logger;
 		AutomationElement = automationElement;
 		Parent = parent;
+		IsExpanded = isExpanded;
 
 		Name = (AutomationElement?.Properties.Name.ValueOrDefault ?? string.Empty).NormalizeString();
 		AutomationId = (AutomationElement?.Properties.AutomationId.ValueOrDefault ?? string.Empty).NormalizeString();

@@ -217,9 +217,9 @@ public class ProcessViewModel : ObservableObject {
 	public event Action? CopiedNotificationRequested;
 
 	public void Initialize() {
-		ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger, 2);
+		ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger, 2, true);
 
-		Elements = new ObservableCollection<ElementViewModel>(desktopViewModel.Children);
+		Elements = [desktopViewModel, .. desktopViewModel.Children];
 
 		// Initialize focus tracking
 		_focusTrackingMode ??= new FocusTrackingMode(_automation,
