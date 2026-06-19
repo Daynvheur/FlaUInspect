@@ -52,6 +52,7 @@
 			<converters:IntToVisibilityConverter x:Key="IntToVisibilityConverter" />
 			<converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
 			<converters:IndentConverter x:Key="IndentConverter" />
+			<converters:ControlTypeToIconConverter x:Key="ControlTypeToIconConverter" />
 
 			<Style x:Key="RibbonButtonStyle"
 				   BasedOn="{StaticResource {x:Type Button}}"
@@ -310,6 +311,10 @@
 												  Style="{StaticResource ElementToggleExpanderStyle}"
 												  Visibility="{Binding Children.Count, Converter={StaticResource CountToVisibilityConverter}}" />
 
+									<ContentControl Width="16"
+													Height="16"
+													Margin="4,0,0,0"
+													Content="{Binding ControlType, Converter={StaticResource ControlTypeToIconConverter}}" />
 
 									<TextBlock Margin="4,0,0,0"
 											   ToolTip="{Binding}">
