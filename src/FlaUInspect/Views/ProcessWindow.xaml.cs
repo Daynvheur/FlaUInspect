@@ -67,7 +67,7 @@ public partial class ProcessWindow : Window {
 			return;
 
 		if (expandToggleButton.IsChecked == true)
-			processViewModel?.ElementToSelectChanged(elementViewModel?.AutomationElement, true);
+			_ = processViewModel?.ElementToSelectChanged(elementViewModel?.AutomationElement, true);
 		else if (expandToggleButton.IsChecked == false)
 			processViewModel.CollapseElement(elementViewModel);
 	}
