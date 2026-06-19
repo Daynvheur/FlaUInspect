@@ -1,7 +1,10 @@
+using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows;
+using System.Windows.Forms;
 using FlaUI.Core.Overlay;
 using FlaUInspect.Settings;
 
@@ -10,7 +13,9 @@ namespace FlaUInspect.Core;
 public partial class ElementOverlay(ElementOverlayConfiguration configuration) : IDisposable {
 	public ElementOverlay(OverlaySettings HoverOverlay) : this(new ElementOverlayConfiguration(HoverOverlay)) { }
 
-	private OverlayRectangleForm[] _overlayRectangleFormList = [];
+	private static int _instanceCounter = 0;
+	private readonly int _instanceId = Interlocked.Increment(ref _instanceCounter);
+	private readonly Dictionary<int, Form> _overlayRectangleFormList = new();
 
 	public ElementOverlayConfiguration Configuration { get; } = configuration;
 
@@ -22,34 +27,53 @@ public partial class ElementOverlay(ElementOverlayConfiguration configuration) :
 	public void Hide() {
 		foreach (var overlayRectangleForm in _overlayRectangleFormList) {
 			try {
+				overlayRectangleForm.Value.Hide();
+				overlayRectangleForm.Value.Close();
+			}
+			catch (InvalidOperationException) { }
+			overlayRectangleForm.Value.Dispose();
+		}
+		_overlayRectangleFormList.Clear();
+	}
+
+	public void Hide(Rectangle rectangle) {
+		var key = GetRectangleKey(rectangle);
+		if (_overlayRectangleFormList.TryGetValue(key, out var overlayRectangleForm)) {
+			try {
 				overlayRectangleForm.Hide();
 				overlayRectangleForm.Close();
 			}
 			catch (InvalidOperationException) { }
 			overlayRectangleForm.Dispose();
+			_ = _overlayRectangleFormList.Remove(key);
 		}
-		_overlayRectangleFormList = [];
 	}
 
 	public void Show(Rectangle rectangle) {
 		var color1 = Color.FromArgb(255, Configuration.Color.R, Configuration.Color.G, Configuration.Color.B);
 		var rectangles = Configuration.RectangleFactory?.Invoke(Configuration, rectangle) ?? ElementOverlayConfiguration.BoundRectangleFactory(Configuration, rectangle);
 
-		List<OverlayRectangleForm> rectangleForms = [];
-
 		foreach (var rectangle1 in rectangles) {
-			OverlayRectangleForm overlayRectangleForm1 = new() {
-				BackColor = color1,
-				Opacity = Configuration.Color.A / 255d
-			};
-			var overlayRectangleForm2 = overlayRectangleForm1;
-			rectangleForms.Add(overlayRectangleForm2);
-			_ = SetWindowPos(overlayRectangleForm2.Handle, new IntPtr(-1), rectangle1.X, rectangle1.Y, rectangle1.Width, rectangle1.Height, 16 /*0x10*/);
-			_ = ShowWindow(overlayRectangleForm2.Handle, 8);
-		}
+			var key = GetRectangleKey(rectangle1);
+			if (!_overlayRectangleFormList.TryGetValue(key, out var overlayRectangleForm)) {
+				overlayRectangleForm = new Form {
+					FormBorderStyle = FormBorderStyle.None,
+					BackColor = color1,
+					TransparencyKey = color1,
+					TopMost = true,
+					ShowInTaskbar = false,
+					Opacity = Configuration.Color.A / 255d,
+					Tag = _instanceId
+				};
+				_overlayRectangleFormList[key] = overlayRectangleForm;
+			}
 
-		_overlayRectangleFormList = [.. rectangleForms];
+			_ = SetWindowPos(overlayRectangleForm.Handle, new IntPtr(-1), rectangle1.X, rectangle1.Y, rectangle1.Width, rectangle1.Height, 16 /*0x10*/);
+			_ = ShowWindow(overlayRectangleForm.Handle, 8);
+		}
 	}
+
+	private static int GetRectangleKey(Rectangle rectangle) => HashCode.Combine(rectangle.X, rectangle.Y, rectangle.Width, rectangle.Height);
 
 	[LibraryImport("user32.dll", SetLastError = true)]
 	[return: MarshalAs(UnmanagedType.Bool)]

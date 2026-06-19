@@ -78,4 +78,12 @@ public partial class ProcessWindow : Window {
 		if (DataContext is ProcessViewModel processViewModel && processViewModel.ClosingCommand.CanExecute(DataContext))
 			processViewModel.ClosingCommand.Execute(DataContext);
 	}
+
+	private void TreeViewControl_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+		if (DataContext is not ProcessViewModel processViewModel ||
+			TreeViewControl.SelectedItem is not ElementViewModel selectedElement)
+			return;
+
+		processViewModel.SetFocus(selectedElement);
+	}
 }

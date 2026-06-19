@@ -271,7 +271,8 @@
 							  ItemsSource="{Binding Elements}"
 							  ScrollViewer.CanContentScroll="True"
 							  SelectedItem="{Binding SelectedItem}"
-							  SelectionChanged="TreeOnSelectionChanged">
+							  SelectionChanged="TreeOnSelectionChanged"
+							  MouseDoubleClick="TreeViewControl_MouseDoubleClick">
 
 						<ListView.ItemContainerStyle>
 							<Style TargetType="ListViewItem">
