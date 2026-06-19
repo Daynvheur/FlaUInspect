@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -10,7 +8,7 @@ using FlaUI.Core.Definitions;
 namespace FlaUInspect.Core.Converters;
 
 public class ControlTypeToIconConverter : MarkupExtension, IValueConverter {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+	public object? Convert(object value, Type targetType, object parameter, CultureInfo culture) {
 		if (value is not ControlType controlType)
 			return null;
 
@@ -45,13 +43,25 @@ public class ControlTypeToIconConverter : MarkupExtension, IValueConverter {
 			ControlType.TitleBar => "TitleBar",
 			ControlType.DataGrid => "DataGrid",
 			ControlType.Custom => "Custom",
+			ControlType.AppBar => "Custom",
+			ControlType.Calendar => "Custom",
+			ControlType.DataItem => "Custom",
+			ControlType.Hyperlink => "Custom",
+			ControlType.ListItem => "Custom",
+			ControlType.MenuBar => "Custom",
+			ControlType.SemanticZoom => "Custom",
+			ControlType.Separator => "Custom",
+			ControlType.TabItem => "Custom",
+			ControlType.Table => "Custom",
+			ControlType.TreeItem => "Custom",
+			ControlType.Unknown => "Custom",
 			_ => "Custom"
 		};
 
 		return FindResourceInMergedDictionaries(iconName) as Canvas;
 	}
 
-	private static object FindResourceInMergedDictionaries(object key) {
+	private static object? FindResourceInMergedDictionaries(object key) {
 		var dictionaries = new List<ResourceDictionary>();
 
 		var currentApp = Application.Current;
@@ -63,13 +73,13 @@ public class ControlTypeToIconConverter : MarkupExtension, IValueConverter {
 				if (window?.Resources == null)
 					continue;
 
-				foreach (ResourceDictionary dict in window.Resources.MergedDictionaries) {
+				foreach (var dict in window.Resources.MergedDictionaries) {
 					if (dict == null)
 						continue;
 
 					dictionaries.Add(dict);
 
-					foreach (ResourceDictionary merged in dict.MergedDictionaries) {
+					foreach (var merged in dict.MergedDictionaries) {
 						if (merged != null)
 							dictionaries.Add(merged);
 					}
@@ -77,7 +87,7 @@ public class ControlTypeToIconConverter : MarkupExtension, IValueConverter {
 			}
 		}
 
-		foreach (ResourceDictionary dict in dictionaries) {
+		foreach (var dict in dictionaries) {
 			if (dict == null)
 				continue;
 
