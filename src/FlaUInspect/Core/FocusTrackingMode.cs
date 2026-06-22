@@ -17,7 +17,6 @@ public class FocusTrackingMode(AutomationBase? automation, Func<AutomationElemen
 	public void Stop() {
 		if (_eventHandler is not null)
 			automation?.UnregisterFocusChangedEvent(_eventHandler);
-		automation?.UnregisterAllEvents();
 	}
 
 	private void OnFocusChanged(AutomationElement? automationElement) {
@@ -33,7 +32,7 @@ public class FocusTrackingMode(AutomationBase? automation, Func<AutomationElemen
 		}
 
 		if (!Equals(_currentFocusedElement, automationElement)) {
-			_currentFocusedElement = Application.Current.Dispatcher.Invoke(() => onFocusChangedAction(automationElement));
+			_ = Application.Current.Dispatcher.BeginInvoke(new Action(() => _currentFocusedElement = onFocusChangedAction(automationElement)));
 		}
 	}
 }

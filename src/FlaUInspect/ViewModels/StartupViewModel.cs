@@ -230,16 +230,22 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 
 	public void Init() {
 		IsBusy = true;
-		var currentProcessId = Environment.ProcessId;
-		IEnumerable<ProcessWindowInfo> collection = [.. GetChildren(_defaultAutomation.GetDesktop())
-													.Where(x => !string.IsNullOrEmpty(x.Name))
-													.Where(x => x.Properties.ProcessId != currentProcessId)
-													.Select(x => new ProcessWindowInfo(x.Properties.ProcessId.Value,
-																					   x.Name,
-																					   x.Properties.NativeWindowHandle.Value))];
-		Processes = new ObservableCollection<ProcessWindowInfo>(collection);
-		IsBusy = false;
-		return;
+		try {
+			var currentProcessId = Environment.ProcessId;
+			IEnumerable<ProcessWindowInfo> collection = [.. GetChildren(_defaultAutomation.GetDesktop())
+														.Where(x => !string.IsNullOrEmpty(x.Name))
+														.Where(x => x.Properties.ProcessId != currentProcessId)
+														.Select(x => new ProcessWindowInfo(x.Properties.ProcessId.Value,
+																						   x.Name,
+																						   x.Properties.NativeWindowHandle.Value))];
+
+			Application.Current.Dispatcher.Invoke(() => {
+				Processes = new ObservableCollection<ProcessWindowInfo>(collection);
+			});
+		}
+		finally {
+			IsBusy = false;
+		}
 
 		AutomationElement[] GetChildren(AutomationElement el) => IsWindowedOnly ? el.FindAllChildren(x => x.ByControlType(ControlType.Window)) : el.FindAllChildren();
 	}

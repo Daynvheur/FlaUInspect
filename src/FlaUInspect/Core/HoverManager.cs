@@ -18,6 +18,8 @@ public static class HoverManager {
 
 	private static readonly Lock _lockObject = new();
 
+	private static bool _isRefreshing;
+
 	static HoverManager() {
 		DispatcherTimer timer = new() {
 			Interval = TimeSpan.FromMilliseconds(300)
@@ -29,51 +31,81 @@ public static class HoverManager {
 	public static bool IsInitialized => _automationBase is not null && _elementOverlayFunc is not null;
 
 	private static void Refresh() {
+		if (_isRefreshing)
+			return;
+
+		_isRefreshing = true;
+
 		if (_enabledListeners.Count == 0) {
 			_elementOverlay?.Dispose();
 			_hoveredElement = null;
+			_isRefreshing = false;
 			return;
 		}
 
-		if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+		if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+			_isRefreshing = false;
 			return;
+		}
 
 		var screenPos = Mouse.Position;
-		try {
-			var automationElement = _automationBase?.FromPoint(screenPos);
-			if (automationElement is null || (_hoveredElement is not null && automationElement.Equals(_hoveredElement)))
-				return;
-
-			_elementOverlay?.Dispose();
-
-			if (automationElement.Properties.ProcessId == Environment.ProcessId) {
-				_hoveredElement = null;
-				return;
-			}
-			_hoveredElement = automationElement;
-
-			foreach (var keyValuePair in _listeners)
-				try {
-					keyValuePair.Value?.Invoke(automationElement);
-				}
-				catch {
-					// ignored
-				}
-
+		_ = Task.Run(() => {
+			AutomationElement? automationElement = null;
 			try {
-				if (_elementOverlayFunc is not null && _enabledListeners.Count > 0) {
-					var elementOverlay = _elementOverlayFunc();
-					elementOverlay?.Show(automationElement.Properties.BoundingRectangle.Value);
-					_elementOverlay = elementOverlay;
-				}
+				automationElement = _automationBase?.FromPoint(screenPos);
 			}
 			catch {
 				// ignored
 			}
-		}
-		catch {
-			// ignored
-		}
+
+			if (System.Windows.Application.Current is null) {
+				_isRefreshing = false;
+				return;
+			}
+
+			_ = System.Windows.Application.Current.Dispatcher.BeginInvoke(new Action(() => {
+				try {
+					if (automationElement is null || (_hoveredElement is not null && automationElement.Equals(_hoveredElement))) {
+						_isRefreshing = false;
+						return;
+					}
+
+					_elementOverlay?.Dispose();
+
+					if (automationElement.Properties.ProcessId == Environment.ProcessId) {
+						_hoveredElement = null;
+						_isRefreshing = false;
+						return;
+					}
+					_hoveredElement = automationElement;
+
+					foreach (var keyValuePair in _listeners)
+						try {
+							keyValuePair.Value?.Invoke(automationElement);
+						}
+						catch {
+							// ignored
+						}
+
+					try {
+						if (_elementOverlayFunc is not null && _enabledListeners.Count > 0) {
+							var elementOverlay = _elementOverlayFunc();
+							elementOverlay?.Show(automationElement.Properties.BoundingRectangle.Value);
+							_elementOverlay = elementOverlay;
+						}
+					}
+					catch {
+						// ignored
+					}
+				}
+				catch {
+					// ignored
+				}
+				finally {
+					_isRefreshing = false;
+				}
+			}));
+		});
 	}
 
 	public static void AddListener(IntPtr id, Action<AutomationElement?> onElementHovered) {

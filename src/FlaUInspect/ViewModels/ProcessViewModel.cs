@@ -23,6 +23,8 @@ public partial class ProcessViewModel : ObservableObject {
 	private readonly int _processId;
 	private readonly ITreeWalker _treeWalker;
 	private readonly IntPtr _windowHandle;
+	private bool _isDisposed;
+	private bool _isInitializing;
 	private FocusTrackingMode? _focusTrackingMode;
 	private ElementOverlay _trackHighlighterOverlay;
 
@@ -54,7 +56,7 @@ public partial class ProcessViewModel : ObservableObject {
 
 		HoverManager.AddListener(_windowHandle,
 								 x => {
-									 if (EnableHoverMode)
+									 if (!_isDisposed && !_isInitializing && EnableHoverMode)
 										 _ = ElementToSelectChanged(x);
 								 });
 		HoverManager.Disable(_windowHandle);
@@ -92,9 +94,10 @@ public partial class ProcessViewModel : ObservableObject {
 		});
 
 		ClosingCommand = new RelayCommand(_ => {
+			_isDisposed = true;
+			HoverManager.Disable(_windowHandle);
 			HoverManager.RemoveListener(_windowHandle);
 			_trackHighlighterOverlay?.Dispose();
-			_focusTrackingMode?.Stop();
 			_focusTrackingMode = null;
 		});
 
@@ -145,7 +148,7 @@ public partial class ProcessViewModel : ObservableObject {
 			if (EnableHighLightSelectionMode)
 				TrackSelectedItem(value);
 
-			_ = Task.Run(() => ReadPatternsForSelectedItem(value?.AutomationElement));
+			ReadPatternsForSelectedItem(value?.AutomationElement);
 		}
 	}
 
@@ -218,17 +221,23 @@ public partial class ProcessViewModel : ObservableObject {
 	public event Action? CopiedNotificationRequested;
 
 	public void Initialize() {
-		ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger, 2, true);
+		_isInitializing = true;
+		try {
+			ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger, 2, true);
 
-		Elements = [desktopViewModel, .. desktopViewModel.Children];
+			Elements = [desktopViewModel, .. desktopViewModel.Children];
 
-		// Initialize focus tracking
-		_focusTrackingMode ??= new FocusTrackingMode(_automation,
-													   x => EnableFocusTrackingMode ? ElementToSelectChanged(x)?.AutomationElement : null);
-		SelectedItem = desktopViewModel;
+			// Initialize focus tracking
+			_focusTrackingMode ??= new FocusTrackingMode(_automation,
+														   x => EnableFocusTrackingMode ? ElementToSelectChanged(x)?.AutomationElement : null);
+			SelectedItem = desktopViewModel;
 
-		OnPropertyChanged(nameof(Elements));
-		OnPropertyChanged(nameof(ElementPatterns));
+			OnPropertyChanged(nameof(Elements));
+			OnPropertyChanged(nameof(ElementPatterns));
+		}
+		finally {
+			_isInitializing = false;
+		}
 	}
 
 	public ElementViewModel? ElementToSelectChanged(AutomationElement? obj, bool forceExpand = false) => SelectedItem = GetNextElementVm(forceExpand, GetPathToRoot(obj, forceExpand), Elements);
@@ -341,6 +350,24 @@ public partial class ProcessViewModel : ObservableObject {
 			return;
 
 		var children = sender.LoadChildren(1);
+
+		foreach (var child in children)
+			try {
+				if (!elements.Any(e => e.AutomationElement?.Equals(child.AutomationElement) == true))
+					elements.Insert(++senderIndex, child);
+			}
+			catch (NotSupportedException) { }
+			catch (InvalidOperationException) { }
+			catch (COMException) { }
+	}
+
+	public async Task ExpandElementAsync(ElementViewModel sender) {
+		var children = await Task.Run(() => sender.LoadChildren(1));
+
+		var elements = Elements;
+		var senderIndex = elements.IndexOf(sender);
+		if (senderIndex < 0)
+			return;
 
 		foreach (var child in children)
 			try {
