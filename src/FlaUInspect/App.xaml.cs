@@ -2,6 +2,7 @@
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
+using FlaUInspect.Core;
 using FlaUInspect.Core.Logger;
 using FlaUInspect.Settings;
 using FlaUInspect.ViewModels;
@@ -47,21 +48,16 @@ public partial class App {
 		// Apply theme
 		Current.Dispatcher.Invoke(() => SetTheme(settings));
 
-		FlaUiAppOptions.HoverOverlay = settings.HoverOverlay != null
-			? (() => new(settings.HoverOverlay))
-			: FlaUiAppOptions.DefaultOverlay;
-
-		FlaUiAppOptions.SelectionOverlay = settings.SelectionOverlay != null
-			? (() => new(settings.SelectionOverlay))
-			: FlaUiAppOptions.DefaultOverlay;
-
-		FlaUiAppOptions.PickOverlay = settings.PickOverlay != null
-			? (() => new(settings.PickOverlay))
-			: FlaUiAppOptions.DefaultOverlay;
+		SetOverlayOption(settings.HoverOverlay, o => FlaUiAppOptions.HoverOverlay = o);
+		SetOverlayOption(settings.SelectionOverlay, o => FlaUiAppOptions.SelectionOverlay = o);
+		SetOverlayOption(settings.PickOverlay, o => FlaUiAppOptions.PickOverlay = o);
 
 		// Add overlay colors as application resources
 		Current.Dispatcher.Invoke(() => SetOverlayColors(settings));
 	}
+
+	private static void SetOverlayOption(OverlaySettings? overlay, Action<Func<ElementOverlay?>> setter)
+		=> setter(overlay != null ? (() => new(overlay)) : FlaUiAppOptions.DefaultOverlay);
 
 	private static void SetOverlayColors(FlaUiAppSettings settings) {
 		var pickColor = settings.PickOverlay != null
