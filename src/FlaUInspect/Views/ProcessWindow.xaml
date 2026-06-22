@@ -12,7 +12,7 @@
 		Height="450"
 		d:DataContext="{d:DesignInstance viewModels:ProcessViewModel}"
 		Background="{DynamicResource PrimaryWindowBackgroundBrush}"
-		Closed="ProcessWindowOnClosed"
+		Closed="ProcessWindow_Closed"
 		mc:Ignorable="d">
 	<Window.Resources>
 		<ResourceDictionary>

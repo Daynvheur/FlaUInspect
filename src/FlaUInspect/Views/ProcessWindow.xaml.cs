@@ -11,7 +11,6 @@ namespace FlaUInspect.Views;
 public partial class ProcessWindow : Window {
 	public ProcessWindow() {
 		InitializeComponent();
-		Closed += ProcessWindow_Closed;
 		Loaded += MainWindow_Loaded;
 	}
 
@@ -34,14 +33,7 @@ public partial class ProcessWindow : Window {
 		ShowCopiedNotification.Visibility = Visibility.Collapsed;
 	}
 
-	private void ProcessWindow_Closed(object? sender, EventArgs e) {
-		if (Application.Current.Windows.Count >= 1 && Application.Current.MainWindow is StartupWindow) { // On WPF debug, there is a secondary AdornerWindow attached to the process
-																										 // this may be the case in other places aswell,
-																										 // there is no need to check for window singleness,
-																										 // only that at least the current MainWindow is the StartupWindow (Bug report)
-			ExecuteClosingCommand();
-		}
-	}
+	private void ProcessWindow_Closed(object? sender, EventArgs e) => ExecuteClosingCommand();
 
 	private void SelectWindowClick(object sender, RoutedEventArgs e) => (Application.Current.MainWindow as StartupWindow)?.Show();
 
@@ -71,8 +63,6 @@ public partial class ProcessWindow : Window {
 		else if (expandToggleButton.IsChecked == false)
 			processViewModel.CollapseElement(elementViewModel);
 	}
-
-	private void ProcessWindowOnClosed(object? sender, EventArgs e) => ExecuteClosingCommand();
 
 	private void ExecuteClosingCommand() {
 		if (DataContext is ProcessViewModel processViewModel && processViewModel.ClosingCommand.CanExecute(DataContext))
