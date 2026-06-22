@@ -60,11 +60,9 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 		SaveSettingCommand = new RelayCommand(_ => {
 			((IDialogViewModel)DialogContent!).Save();
 
-			var settingsViewModel = DialogContent as ISettingViewModel;
+			if (DialogContent is ISettingViewModel settingsViewModel)
+				App.ApplyAppOption(settingsViewModel.Settings.Current.Clone() as FlaUiAppSettings);
 			DialogContent = null;
-
-			if (settingsViewModel != null)
-				App.ApplyAppOption(settingsViewModel.Settings.Current);
 		},
 											  _ => DialogContent is IDialogViewModel { CanClose: true });
 		AboutCommand = new RelayCommand(_ => DialogContent = new AboutViewModel());
