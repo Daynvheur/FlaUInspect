@@ -204,20 +204,29 @@
 							<MenuItem Command="{Binding CopyDetailsToClipboardCommand}"
 									  CommandParameter="-1">
 								<MenuItem.Header>
-									<TextBlock Text="-1"
+									<TextBlock Text="All descendants"
 											   Foreground="Red"/>
 								</MenuItem.Header>
 							</MenuItem>
 							<Separator/>
-							<MenuItem Header="1"
-									  Command="{Binding CopyDetailsToClipboardCommand}"
-									  CommandParameter="1"/>
-							<MenuItem Header="2"
-									  Command="{Binding CopyDetailsToClipboardCommand}"
-									  CommandParameter="2"/>
-							<MenuItem Header="3"
-									  Command="{Binding CopyDetailsToClipboardCommand}"
-									  CommandParameter="3"/>
+							<MenuItem Command="{Binding CopyDetailsToClipboardCommand}"
+									  CommandParameter="1">
+								<MenuItem.Header>
+									<TextBlock Text="Plus Children"/>
+								</MenuItem.Header>
+							</MenuItem>
+							<MenuItem Command="{Binding CopyDetailsToClipboardCommand}"
+									  CommandParameter="2">
+								<MenuItem.Header>
+									<TextBlock Text="Plus GrandChildren"/>
+								</MenuItem.Header>
+							</MenuItem>
+							<MenuItem Command="{Binding CopyDetailsToClipboardCommand}"
+									  CommandParameter="3">
+								<MenuItem.Header>
+									<TextBlock Text="Plus GreatGrandChildren"/>
+								</MenuItem.Header>
+							</MenuItem>
 						</ContextMenu>
 					</Button.ContextMenu>
 
@@ -277,6 +286,41 @@
 							<ContextMenu>
 								<MenuItem Header="Bring to front"
 										  Click="HighlightFocusClick" />
+								<Separator />
+								<MenuItem Header="Extract UI for">
+									<MenuItem Command="{Binding ExtractUIFromHereCommand}"
+											  CommandParameter="-1">
+										<MenuItem.Header>
+											<TextBlock Text="All descendants"
+													   Foreground="Red"/>
+										</MenuItem.Header>
+									</MenuItem>
+									<MenuItem Command="{Binding ExtractUIFromHereCommand}"
+											  CommandParameter="0">
+										<MenuItem.Header>
+											<TextBlock Text="Just me"
+													   FontStyle="Italic"/>
+										</MenuItem.Header>
+									</MenuItem>
+									<MenuItem Command="{Binding ExtractUIFromHereCommand}"
+											  CommandParameter="1">
+										<MenuItem.Header>
+											<TextBlock Text="Plus Children"/>
+										</MenuItem.Header>
+									</MenuItem>
+									<MenuItem Command="{Binding ExtractUIFromHereCommand}"
+											  CommandParameter="2">
+										<MenuItem.Header>
+											<TextBlock Text="Plus GrandChildren"/>
+										</MenuItem.Header>
+									</MenuItem>
+									<MenuItem Command="{Binding ExtractUIFromHereCommand}"
+											  CommandParameter="3">
+										<MenuItem.Header>
+											<TextBlock Text="Plus GreatGrandChildren"/>
+										</MenuItem.Header>
+									</MenuItem>
+								</MenuItem>
 							</ContextMenu>
 						</TreeView.ContextMenu>
 

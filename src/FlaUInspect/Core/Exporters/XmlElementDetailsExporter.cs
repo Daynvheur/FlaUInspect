@@ -20,6 +20,17 @@ public class XmlElementDetailsExporter : IElementDetailsExporter {
 		return document.ToString();
 	}
 
+	public static string Export(AutomationElement automationElement, ProcessViewModel processViewModel, int depthMax = 1) {
+		XDocument document = new();
+
+		if (automationElement is null)
+			document.Add((XElement)new("Root"));
+		else
+			document.Add(CreateBranch(new("Root"), automationElement, processViewModel, depthMax));
+
+		return document.ToString();
+	}
+
 	private static XElement CreateBranch(XElement parent, AutomationElement automationElement, ProcessViewModel processViewModel, int depthMax, int depth = 0) {
 		var elementPatterns = processViewModel.GetElementPatterns(automationElement);
 		if (elementPatterns is not null)

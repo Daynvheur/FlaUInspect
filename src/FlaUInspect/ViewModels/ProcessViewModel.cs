@@ -119,6 +119,25 @@ public partial class ProcessViewModel : ObservableObject {
 				_logger?.LogError(e.ToString());
 			}
 		});
+
+		ExtractUIFromHereCommand = new RelayCommand(param => {
+			if (SelectedItem?.AutomationElement is null)
+				return;
+
+			try {
+				var depthMax = param switch {
+					int i => i,
+					string s when int.TryParse(s, out var i) => i,
+					_ => 0 // valeur par défaut (toute la descendance)
+				};
+				Clipboard.SetText(XmlElementDetailsExporter.Export(SelectedItem.AutomationElement, this, depthMax));
+
+				CopiedNotificationRequested?.Invoke();
+			}
+			catch (Exception e) {
+				_logger?.LogError(e.ToString());
+			}
+		});
 	}
 
 	public string? WindowTitle { get; }
@@ -173,6 +192,7 @@ public partial class ProcessViewModel : ObservableObject {
 	public ICommand CaptureSelectedItemCommand { get; }
 	public ICommand CurrentElementSaveStateCommand { get; }
 	public ICommand CopyDetailsToClipboardCommand { get; }
+	public ICommand ExtractUIFromHereCommand { get; }
 
 	public bool EnableFocusTrackingMode {
 		get => GetProperty<bool>();

@@ -4,7 +4,6 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using FlaUInspect.ViewModels;
 using Button = System.Windows.Controls.Button;
-using ToggleButton = System.Windows.Controls.Primitives.ToggleButton;
 using Window = System.Windows.Window;
 
 namespace FlaUInspect.Views;
@@ -66,13 +65,12 @@ public partial class ProcessWindow : Window {
 	}
 
 	private void TreeViewControl_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
-		var treeView = sender as TreeView;
-		if (treeView is null || DataContext is not ProcessViewModel processViewModel)
+		if (sender is not TreeView || DataContext is not ProcessViewModel processViewModel)
 			return;
 
 		// Find the TreeViewItem under the mouse
 		var source = e.OriginalSource as DependencyObject;
-		while (source is not null && source is not TreeViewItem)
+		while (source is not null and not TreeViewItem)
 			source = VisualTreeHelper.GetParent(source);
 
 		if (source is TreeViewItem itemContainer) {
