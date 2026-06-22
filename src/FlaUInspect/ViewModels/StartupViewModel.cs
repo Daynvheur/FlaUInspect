@@ -30,7 +30,7 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 
 	public StartupViewModel() {
 		IsWindowedOnly = true;
-		RefreshCommand = new AsyncRelayCommand(_ => Init());
+		RefreshCommand = new RelayCommand(_ => Init());
 
 		PickCommand = new AsyncRelayCommand(async _ => {
 			using CancellationTokenSource cts = new(TimeSpan.FromSeconds(30));
@@ -228,9 +228,8 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 			? (_defaultAutomation?.FromHandle(rootHwnd))
 			: null;
 
-	public async Task Init() {
+	public void Init() {
 		IsBusy = true;
-		await Task.Delay(100); // Simulate some loading time;
 		var currentProcessId = Environment.ProcessId;
 		IEnumerable<ProcessWindowInfo> collection = [.. GetChildren(_defaultAutomation.GetDesktop())
 													.Where(x => !string.IsNullOrEmpty(x.Name))
