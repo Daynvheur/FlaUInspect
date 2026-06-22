@@ -7,7 +7,6 @@ using FlaUI.UIA3;
 using FlaUInspect.Core;
 using FlaUInspect.Core.Logger;
 using FlaUInspect.ViewModels;
-using Application = System.Windows.Application;
 
 namespace FlaUInspect.Views;
 
@@ -42,12 +41,7 @@ public partial class StartupWindow {
 			HoverManager.Initialize(new UIA3Automation(), () => App.FlaUiAppOptions.HoverOverlay());
 	}
 
-	private void CloseClick(object sender, RoutedEventArgs e) {
-		if (Application.Current.Windows.Count >= 1)
-			Close();
-		else
-			WindowState = WindowState.Minimized;
-	}
+	private void CloseClick(object sender, RoutedEventArgs e) => Close();
 
 	private void PickWindowButton_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
 		if (sender is Button { Command: { } command } && command.CanExecute(null))
