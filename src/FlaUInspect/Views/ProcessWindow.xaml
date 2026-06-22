@@ -287,6 +287,10 @@
 								<MenuItem Header="Bring to front"
 										  Click="HighlightFocusClick" />
 								<Separator />
+								<MenuItem Header="Capture PNG"
+										  Command="{Binding CaptureSelectedItemCommand}" />
+								<MenuItem Header="Gather UI elements"
+										  Command="{Binding CurrentElementSaveStateCommand}" />
 								<MenuItem Header="Extract UI for">
 									<MenuItem Command="{Binding ExtractUIFromHereCommand}"
 											  CommandParameter="-1">
