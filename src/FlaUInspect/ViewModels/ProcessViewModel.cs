@@ -1,13 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Drawing.Imaging;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using FlaUI.Core;
 using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Identifiers;
-using FlaUI.Core.Patterns;
 using FlaUInspect.Core;
 using FlaUInspect.Core.Exporters;
 using FlaUInspect.Core.Logger;
@@ -16,7 +14,7 @@ using Microsoft.Win32;
 
 namespace FlaUInspect.ViewModels;
 
-public class ProcessViewModel : ObservableObject {
+public partial class ProcessViewModel : ObservableObject {
 
 	private readonly PatternItemsFactory _patternItemsFactory;
 	private readonly AutomationElement _rootElement;
@@ -27,7 +25,7 @@ public class ProcessViewModel : ObservableObject {
 	private readonly IntPtr _windowHandle;
 	private FocusTrackingMode? _focusTrackingMode;
 	private ElementOverlay _trackHighlighterOverlay;
-	private readonly List<System.Windows.Threading.DispatcherTimer> _highlightTimers = [];
+
 	private static readonly ElementPatternItem[] _defaultPatternItems = [
 																		new ElementPatternItem("Identification", PatternItemsFactory.Identification, true, true),
 																	new ElementPatternItem("Details", PatternItemsFactory.Details, true, true),
@@ -96,10 +94,6 @@ public class ProcessViewModel : ObservableObject {
 		ClosingCommand = new RelayCommand(_ => {
 			HoverManager.RemoveListener(_windowHandle);
 			_trackHighlighterOverlay?.Dispose();
-			foreach (var timer in _highlightTimers) {
-				timer.Stop();
-			}
-			_highlightTimers.Clear();
 			_focusTrackingMode?.Stop();
 			_focusTrackingMode = null;
 		});
@@ -355,7 +349,7 @@ public class ProcessViewModel : ObservableObject {
 			}
 			catch (NotSupportedException) { }
 			catch (InvalidOperationException) { }
-			catch (System.Runtime.InteropServices.COMException) { }
+			catch (COMException) { }
 	}
 
 	public void CollapseElement(ElementViewModel sender) => CollapseElement(sender, Elements);
@@ -389,8 +383,9 @@ public class ProcessViewModel : ObservableObject {
 		return node is not null && node == parent;
 	}
 
-	[DllImport("user32.dll")]
-	private static extern bool SetForegroundWindow(IntPtr hWnd);
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool SetForegroundWindow(IntPtr hWnd);
 
 	public void SetFocus(ElementViewModel elementViewModel) {
 		if (elementViewModel?.AutomationElement == null)
@@ -405,39 +400,20 @@ public class ProcessViewModel : ObservableObject {
 			if (elementViewModel.AutomationElement.Properties.IsKeyboardFocusable.TryGetValue(out var isFocusable) && isFocusable)
 				// Donner le focus clavier à l'élément via la méthode protégée SetFocus
 				_ = (elementViewModel.AutomationElement.GetType().GetMethod("SetFocus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(elementViewModel.AutomationElement, null));
-
-			// Si l'élément ne supporte pas le focus, afficher un surlignage aux couleurs du Hover
-			ShowHoverHighlight(elementViewModel);
 		}
 		catch (Exception ex) {
 			_logger?.LogError($"Erreur lors de la mise au focus: {ex.Message}");
 		}
 	}
 
-	private void ShowHoverHighlight(ElementViewModel elementViewModel) {
-		if (elementViewModel.AutomationElement == null)
+	public static void BlinkElement(ElementViewModel elementViewModel) {
+		if (elementViewModel?.AutomationElement == null)
 			return;
 
 		try {
 			var rectangle = elementViewModel.AutomationElement.Properties.BoundingRectangle.Value;
 			var overlay = CreateTrackHighlighterOverlay();
-			overlay.Show(rectangle);
-
-			var phase = 0;
-			var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(500) };
-			timer.Tick += (_, _) => {
-				if (++phase == 1)
-					overlay.Hide();
-				else if (phase == 2)
-					overlay.Show(rectangle);
-				else {
-					timer.Stop();
-					overlay.Hide();
-					overlay.Dispose();
-				}
-			};
-			timer.Start();
-			_highlightTimers.Add(timer);
+			overlay.Show(rectangle, 3);
 		}
 		catch (Exception) {
 			// Pas de cleanup nécessaire car l'overlay est local

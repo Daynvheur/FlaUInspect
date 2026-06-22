@@ -85,5 +85,6 @@ public partial class ProcessWindow : Window {
 			return;
 
 		processViewModel.SetFocus(selectedElement);
+		ProcessViewModel.BlinkElement(selectedElement);
 	}
 }

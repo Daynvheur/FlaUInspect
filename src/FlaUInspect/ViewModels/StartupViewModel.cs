@@ -61,7 +61,7 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 			((IDialogViewModel)DialogContent!).Save();
 
 			if (DialogContent is ISettingViewModel settingsViewModel)
-				App.ApplyAppOption(settingsViewModel.Settings.Current.Clone() as FlaUiAppSettings);
+				App.ApplyAppOption((FlaUiAppSettings)settingsViewModel.Settings.Current.Clone());
 			DialogContent = null;
 		},
 											  _ => DialogContent is IDialogViewModel { CanClose: true });
