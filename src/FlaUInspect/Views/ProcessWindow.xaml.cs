@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using FlaUInspect.ViewModels;
 using Button = System.Windows.Controls.Button;
@@ -37,9 +38,12 @@ public partial class ProcessWindow : Window {
 
 	private void SelectWindowClick(object sender, RoutedEventArgs e) => (Application.Current.MainWindow as StartupWindow)?.Show();
 
-	private void TreeView_OnSelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
+	private void TreeViewControl_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
 		if (DataContext is ProcessViewModel processViewModel)
 			processViewModel.SelectedItem = e.NewValue as ElementViewModel;
+
+		var container = TreeViewControl.ItemContainerGenerator.ContainerFromItem(TreeViewControl.SelectedItem) as TreeViewItem;
+		container?.BringIntoView();
 	}
 
 	private async void InvokePatternActionHandler(object sender, RoutedEventArgs e) {
@@ -47,21 +51,6 @@ public partial class ProcessWindow : Window {
 
 		if (vm?.Action is not null)
 			await Task.Run(vm.Action);
-	}
-
-	private void TreeOnSelectionChanged(object sender, SelectionChangedEventArgs e) {
-		var container = TreeViewControl.ItemContainerGenerator.ContainerFromItem(TreeViewControl.SelectedItem) as ListViewItem;
-		container?.BringIntoView();
-	}
-
-	private void ToggleButton_Click(object sender, RoutedEventArgs e) {
-		if (sender is not ToggleButton expandToggleButton || DataContext is not ProcessViewModel processViewModel || expandToggleButton.DataContext is not ElementViewModel elementViewModel)
-			return;
-
-		if (expandToggleButton.IsChecked == true)
-			_ = processViewModel?.ElementToSelectChanged(elementViewModel?.AutomationElement, true);
-		else if (expandToggleButton.IsChecked == false)
-			processViewModel.CollapseElement(elementViewModel);
 	}
 
 	private void ExecuteClosingCommand() {
@@ -74,6 +63,22 @@ public partial class ProcessWindow : Window {
 			return;
 
 		processViewModel.SetFocus(selectedElement, 3);
+	}
+
+	private void TreeViewControl_MouseRightButtonDown(object sender, System.Windows.Input.MouseButtonEventArgs e) {
+		var treeView = sender as TreeView;
+		if (treeView is null || DataContext is not ProcessViewModel processViewModel)
+			return;
+
+		// Find the TreeViewItem under the mouse
+		var source = e.OriginalSource as DependencyObject;
+		while (source is not null && source is not TreeViewItem)
+			source = VisualTreeHelper.GetParent(source);
+
+		if (source is TreeViewItem itemContainer) {
+			itemContainer.IsSelected = true;
+			processViewModel.SelectedItem = itemContainer.DataContext as ElementViewModel;
+		}
 	}
 
 	private void HighlightFocusClick(object sender, RoutedEventArgs e) {

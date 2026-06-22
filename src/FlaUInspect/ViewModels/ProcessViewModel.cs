@@ -225,7 +225,7 @@ public partial class ProcessViewModel : ObservableObject {
 		try {
 			ElementViewModel desktopViewModel = new(_rootElement, null, 0, _logger, 2, true);
 
-			Elements = [desktopViewModel, .. desktopViewModel.Children];
+			Elements = [desktopViewModel];
 
 			// Initialize focus tracking
 			_focusTrackingMode ??= new FocusTrackingMode(_automation,

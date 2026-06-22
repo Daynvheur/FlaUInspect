@@ -267,64 +267,38 @@
 					  Header="Elements"
 					  Style="{StaticResource GroupBoxStyle}">
 				<Grid>
-					<ListView x:Name="TreeViewControl"
+					<TreeView x:Name="TreeViewControl"
 							  ItemsSource="{Binding Elements}"
 							  ScrollViewer.CanContentScroll="True"
-							  SelectedItem="{Binding SelectedItem}"
-							  SelectionChanged="TreeOnSelectionChanged"
-							  MouseDoubleClick="TreeViewControl_MouseDoubleClick">
-						<ListView.ContextMenu>
+							  SelectedItemChanged="TreeViewControl_SelectedItemChanged"
+							  MouseDoubleClick="TreeViewControl_MouseDoubleClick"
+							  MouseRightButtonDown="TreeViewControl_MouseRightButtonDown">
+						<TreeView.ContextMenu>
 							<ContextMenu>
 								<MenuItem Header="Bring to front"
 										  Click="HighlightFocusClick" />
 							</ContextMenu>
-						</ListView.ContextMenu>
+						</TreeView.ContextMenu>
 
-						<ListView.ItemContainerStyle>
-							<Style TargetType="ListViewItem">
-								<Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
-								<Setter Property="Template">
-									<Setter.Value>
-										<ControlTemplate TargetType="ListViewItem">
-											<Border x:Name="Bd"
-													Background="{TemplateBinding Background}"
-													Padding="{TemplateBinding Padding}">
-												<ContentPresenter />
-											</Border>
-											<ControlTemplate.Triggers>
-												<Trigger Property="IsMouseOver" Value="True">
-													<Setter TargetName="Bd" Property="Background" Value="{DynamicResource PickOverlayBrush}" />
-												</Trigger>
-												<Trigger Property="IsSelected" Value="True">
-													<Setter TargetName="Bd" Property="Background" Value="{DynamicResource SelectionOverlayBrush}" />
-												</Trigger>
-											</ControlTemplate.Triggers>
-										</ControlTemplate>
-									</Setter.Value>
-								</Setter>
+						<TreeView.ItemContainerStyle>
+							<Style TargetType="TreeViewItem">
+								<Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
 							</Style>
-						</ListView.ItemContainerStyle>
+						</TreeView.ItemContainerStyle>
 
-						<ListView.ItemTemplate>
-							<DataTemplate>
-								<StackPanel Margin="{Binding Level, Converter={StaticResource IndentConverter}, Mode=OneWay}"
-											Orientation="Horizontal">
+						<TreeView.ItemTemplate>
+							<HierarchicalDataTemplate ItemsSource="{Binding Children}">
+								<StackPanel Orientation="Horizontal">
 
-									<ToggleButton Width="16"
-												  Height="16"
-												  Click="ToggleButton_Click"
-												  Focusable="False"
-												  IsChecked="{Binding IsExpanded}"
-												  Style="{StaticResource ElementToggleExpanderStyle}"
-												  Visibility="{Binding Children.Count, Converter={StaticResource CountToVisibilityConverter}}" />
-
-									<ContentControl Width="16"
+									<ContentControl Focusable="False"
+													Width="16"
 													Height="16"
 													Margin="4,0,0,0"
 													Content="{Binding ControlType, Converter={StaticResource ControlTypeToIconConverter}}" />
 
 									<TextBlock Margin="4,0,0,0"
-											   ToolTip="{Binding}">
+											   ToolTip="{Binding}"
+											   Focusable="False">
 										<TextBlock.Text>
 											<MultiBinding StringFormat="{}{0} &quot;{1}&quot; &quot;{2}&quot;">
 												<Binding Path="ControlType" />
@@ -334,9 +308,9 @@
 										</TextBlock.Text>
 									</TextBlock>
 								</StackPanel>
-							</DataTemplate>
-						</ListView.ItemTemplate>
-					</ListView>
+							</HierarchicalDataTemplate>
+						</TreeView.ItemTemplate>
+					</TreeView>
 
 					<TextBlock HorizontalAlignment="Center"
 							   VerticalAlignment="Center"
