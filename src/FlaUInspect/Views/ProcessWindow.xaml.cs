@@ -70,11 +70,16 @@ public partial class ProcessWindow : Window {
 	}
 
 	private void TreeViewControl_MouseDoubleClick(object sender, System.Windows.Input.MouseButtonEventArgs e) {
-		if (DataContext is not ProcessViewModel processViewModel ||
-			TreeViewControl.SelectedItem is not ElementViewModel selectedElement)
+		if (DataContext is not ProcessViewModel processViewModel || TreeViewControl.SelectedItem is not ElementViewModel selectedElement)
 			return;
 
-		processViewModel.SetFocus(selectedElement);
-		ProcessViewModel.BlinkElement(selectedElement);
+		processViewModel.SetFocus(selectedElement, 3);
+	}
+
+	private void HighlightFocusClick(object sender, RoutedEventArgs e) {
+		if (DataContext is not ProcessViewModel processViewModel || TreeViewControl.SelectedItem is not ElementViewModel selectedElement)
+			return;
+
+		processViewModel.SetFocus(selectedElement, 3);
 	}
 }

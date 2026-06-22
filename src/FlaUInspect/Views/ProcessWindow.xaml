@@ -273,6 +273,12 @@
 							  SelectedItem="{Binding SelectedItem}"
 							  SelectionChanged="TreeOnSelectionChanged"
 							  MouseDoubleClick="TreeViewControl_MouseDoubleClick">
+						<ListView.ContextMenu>
+							<ContextMenu>
+								<MenuItem Header="Bring to front"
+										  Click="HighlightFocusClick" />
+							</ContextMenu>
+						</ListView.ContextMenu>
 
 						<ListView.ItemContainerStyle>
 							<Style TargetType="ListViewItem">
