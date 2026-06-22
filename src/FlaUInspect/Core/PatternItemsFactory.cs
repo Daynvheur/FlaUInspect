@@ -29,7 +29,7 @@ public class PatternItemsFactory(AutomationBase? automationBase) {
 	public const string Details = "Details";
 	public const string PatternSupport = "Pattern Support";
 
-	private readonly KeyValuePair<PatternId, Func<AutomationElement, IEnumerable<PatternItem>>>[] _patternsUia2Func = [
+	private readonly KeyValuePair<PatternId, Func<AutomationElement, IEnumerable<PatternItem>>>[] _patternsUia2 = [
 		new (GridItemPattern.Pattern, AddGridItemPatternDetails),
 		new (GridPattern.Pattern, AddGridPatternPatternDetails),
 		new (RangeValuePattern.Pattern, AddRangeValuePatternDetails),
@@ -45,7 +45,7 @@ public class PatternItemsFactory(AutomationBase? automationBase) {
 		new (InvokePattern.Pattern, AddInvokePatternDetails)
 	];
 
-	private readonly KeyValuePair<PatternId, Func<AutomationElement, IEnumerable<PatternItem>>>[] _patternsUia3Func = [
+	private readonly KeyValuePair<PatternId, Func<AutomationElement, IEnumerable<PatternItem>>>[] _patternsUia3 = [
 		new (FlaUI.UIA3.Patterns.GridItemPattern.Pattern, AddGridItemPatternDetails),
 		new (FlaUI.UIA3.Patterns.GridPattern.Pattern, AddGridPatternPatternDetails),
 		new (LegacyIAccessiblePattern.Pattern, AddLegacyIAccessiblePatternDetails),
@@ -70,7 +70,7 @@ public class PatternItemsFactory(AutomationBase? automationBase) {
 		};
 
 		var patternsFactory =
-			automationBase is UIA3Automation ? _patternsUia3Func : _patternsUia2Func;
+			automationBase is UIA3Automation ? _patternsUia3 : _patternsUia2;
 
 		foreach ((var key, var value) in patternsFactory.Where(kvp => allSupportedPatterns.Contains(kvp.Key)))
 			patternItems.Add(key.Name, [.. value.Invoke(element)]);
