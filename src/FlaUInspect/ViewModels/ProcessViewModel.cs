@@ -394,19 +394,19 @@ public partial class ProcessViewModel : ObservableObject {
 	private const int SW_RESTORE = 9;
 
 	public void SetFocus(ElementViewModel? elementViewModel, int? blinkCount = null, int blinkIntervalMs = 500) {
-		if (elementViewModel == null)
+		if (elementViewModel is null)
 			return;
 
 		ElementViewModel? focusableElement = null;
 
-		for (var current = elementViewModel; current != null; current = current.Parent) {
+		for (var current = elementViewModel; current is not null; current = current.Parent) {
 			if (current.AutomationElement?.Properties.IsKeyboardFocusable.TryGetValue(out var isFocusable) == true && isFocusable) {
 				focusableElement = current;
 				break;
 			}
 		}
 
-		if (focusableElement == null)
+		if (focusableElement is null)
 			return;
 
 		try {
@@ -415,9 +415,10 @@ public partial class ProcessViewModel : ObservableObject {
 				_ = BringWindowToTop(_windowHandle);
 			}
 
-			_ = (focusableElement.AutomationElement.GetType().GetMethod("SetFocus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(focusableElement.AutomationElement, null));
+			if (focusableElement.AutomationElement is not null)
+				_ = (focusableElement.AutomationElement.GetType().GetMethod("SetFocus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(focusableElement.AutomationElement, null));
 
-			if (blinkCount.HasValue) {
+			if (blinkCount.HasValue && elementViewModel.AutomationElement is not null) {
 				var rectangle = elementViewModel.AutomationElement.Properties.BoundingRectangle.Value;
 				var overlay = CreateTrackHighlighterOverlay();
 				overlay.Show(rectangle, blinkCount, blinkIntervalMs);
