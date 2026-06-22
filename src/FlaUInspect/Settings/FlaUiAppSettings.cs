@@ -32,8 +32,8 @@ public class FlaUiAppSettings : ObservableObject, ICloneable {
 
 	public void CopyTo(FlaUiAppSettings to) {
 		to.Theme = Theme;
-		to.PickOverlay?.CoppyTo(PickOverlay);
-		to.SelectionOverlay?.CoppyTo(SelectionOverlay);
-		to.HoverOverlay?.CoppyTo(HoverOverlay);
+		to.PickOverlay?.CopyTo(PickOverlay);
+		to.SelectionOverlay?.CopyTo(SelectionOverlay);
+		to.HoverOverlay?.CopyTo(HoverOverlay);
 	}
 }

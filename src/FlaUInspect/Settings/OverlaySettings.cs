@@ -27,7 +27,7 @@ public class OverlaySettings : ObservableObject, ICloneable {
 		OverlayMode = OverlayMode
 	};
 
-	public void CoppyTo(OverlaySettings? to) {
+	public void CopyTo(OverlaySettings? to) {
 		if (to == null)
 			return;
 
