@@ -393,7 +393,7 @@ public partial class ProcessViewModel : ObservableObject {
 
 	private const int SW_RESTORE = 9;
 
-	public void SetFocus(ElementViewModel? elementViewModel) {
+	public void SetFocus(ElementViewModel? elementViewModel, int? blinkCount = null, int blinkIntervalMs = 500) {
 		if (elementViewModel == null)
 			return;
 
@@ -416,23 +416,15 @@ public partial class ProcessViewModel : ObservableObject {
 			}
 
 			_ = (focusableElement.AutomationElement.GetType().GetMethod("SetFocus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(focusableElement.AutomationElement, null));
+
+			if (blinkCount.HasValue) {
+				var rectangle = elementViewModel.AutomationElement.Properties.BoundingRectangle.Value;
+				var overlay = CreateTrackHighlighterOverlay();
+				overlay.Show(rectangle, blinkCount, blinkIntervalMs);
+			}
 		}
 		catch (Exception ex) {
 			_logger?.LogError($"Erreur lors de la mise au focus: {ex.Message}");
-		}
-	}
-
-	public static void BlinkElement(ElementViewModel elementViewModel) {
-		if (elementViewModel?.AutomationElement == null)
-			return;
-
-		try {
-			var rectangle = elementViewModel.AutomationElement.Properties.BoundingRectangle.Value;
-			var overlay = CreateTrackHighlighterOverlay();
-			overlay.Show(rectangle, 3);
-		}
-		catch (Exception) {
-			// Pas de cleanup nécessaire car l'overlay est local
 		}
 	}
 }
