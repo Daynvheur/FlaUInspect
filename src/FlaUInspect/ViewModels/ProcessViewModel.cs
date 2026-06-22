@@ -385,21 +385,37 @@ public partial class ProcessViewModel : ObservableObject {
 
 	[LibraryImport("user32.dll")]
 	[return: MarshalAs(UnmanagedType.Bool)]
-	private static partial bool SetForegroundWindow(IntPtr hWnd);
+	private static partial bool BringWindowToTop(IntPtr hWnd);
 
-	public void SetFocus(ElementViewModel elementViewModel) {
-		if (elementViewModel?.AutomationElement == null)
+	[LibraryImport("user32.dll")]
+	[return: MarshalAs(UnmanagedType.Bool)]
+	private static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+	private const int SW_RESTORE = 9;
+
+	public void SetFocus(ElementViewModel? elementViewModel) {
+		if (elementViewModel == null)
+			return;
+
+		ElementViewModel? focusableElement = null;
+
+		for (var current = elementViewModel; current != null; current = current.Parent) {
+			if (current.AutomationElement?.Properties.IsKeyboardFocusable.TryGetValue(out var isFocusable) == true && isFocusable) {
+				focusableElement = current;
+				break;
+			}
+		}
+
+		if (focusableElement == null)
 			return;
 
 		try {
-			// Mettre la fenêtre au premier plan
-			if (elementViewModel.AutomationElement.Properties.NativeWindowHandle.TryGetValue(out var handle) && handle != IntPtr.Zero)
-				_ = SetForegroundWindow(handle);
+			if (_windowHandle != IntPtr.Zero) {
+				_ = ShowWindow(_windowHandle, SW_RESTORE);
+				_ = BringWindowToTop(_windowHandle);
+			}
 
-			// Vérifier si l'élément supporte le focus clavier
-			if (elementViewModel.AutomationElement.Properties.IsKeyboardFocusable.TryGetValue(out var isFocusable) && isFocusable)
-				// Donner le focus clavier à l'élément via la méthode protégée SetFocus
-				_ = (elementViewModel.AutomationElement.GetType().GetMethod("SetFocus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(elementViewModel.AutomationElement, null));
+			_ = (focusableElement.AutomationElement.GetType().GetMethod("SetFocus", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)?.Invoke(focusableElement.AutomationElement, null));
 		}
 		catch (Exception ex) {
 			_logger?.LogError($"Erreur lors de la mise au focus: {ex.Message}");
