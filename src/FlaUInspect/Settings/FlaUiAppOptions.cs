@@ -11,6 +11,5 @@ public class FlaUiAppOptions {
 
 	public Func<ElementOverlay> DefaultOverlay { get; set; } = () => new ElementOverlay(new ElementOverlayConfiguration(2,
 																														new Thickness(0),
-																														Color.Red,
-																														ElementOverlayConfiguration.BoundRectangleFactory));
+																														Color.Red));
 }
