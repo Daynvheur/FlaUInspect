@@ -26,7 +26,7 @@ public static class HoverManager {
 		timer.Start();
 	}
 
-	public static bool IsInitialized => _automationBase != null && _elementOverlayFunc != null;
+	public static bool IsInitialized => _automationBase is not null && _elementOverlayFunc is not null;
 
 	private static void Refresh() {
 		if (_enabledListeners.Count == 0) {
@@ -41,7 +41,7 @@ public static class HoverManager {
 		var screenPos = Mouse.Position;
 		try {
 			var automationElement = _automationBase?.FromPoint(screenPos);
-			if (automationElement == null || (_hoveredElement != null && automationElement.Equals(_hoveredElement)))
+			if (automationElement is null || (_hoveredElement is not null && automationElement.Equals(_hoveredElement)))
 				return;
 
 			_elementOverlay?.Dispose();
@@ -61,7 +61,7 @@ public static class HoverManager {
 				}
 
 			try {
-				if (_elementOverlayFunc != null && _enabledListeners.Count > 0) {
+				if (_elementOverlayFunc is not null && _enabledListeners.Count > 0) {
 					var elementOverlay = _elementOverlayFunc();
 					elementOverlay?.Show(automationElement.Properties.BoundingRectangle.Value);
 					_elementOverlay = elementOverlay;

@@ -13,7 +13,7 @@ public class PatternItem(string key, string? value, Action? action = null) : Obs
 		get;
 		set => SetProperty(ref field, value);
 	} = value;
-	public bool HasExecutableAction => Action != null;
+	public bool HasExecutableAction => Action is not null;
 	public Action? Action { get; } = action;
 
 	public static PatternItem FromAutomationProperty<T>(string key, IAutomationProperty<T> value) => new(key, value!.ToDisplayText());

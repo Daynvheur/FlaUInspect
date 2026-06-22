@@ -15,7 +15,7 @@ public class FocusTrackingMode(AutomationBase? automation, Func<AutomationElemen
 		=> _eventHandler = automation?.RegisterFocusChangedEvent(OnFocusChanged);
 
 	public void Stop() {
-		if (_eventHandler != null)
+		if (_eventHandler is not null)
 			automation?.UnregisterFocusChangedEvent(_eventHandler);
 		automation?.UnregisterAllEvents();
 	}

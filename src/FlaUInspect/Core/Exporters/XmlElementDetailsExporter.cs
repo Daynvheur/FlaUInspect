@@ -9,7 +9,7 @@ public class XmlElementDetailsExporter : IElementDetailsExporter {
 	public string Export(ProcessViewModel processViewModel, int depthMax = 1) {
 		XDocument document = new();
 
-		if (processViewModel.SelectedItem?.AutomationElement == null)
+		if (processViewModel.SelectedItem?.AutomationElement is null)
 			document.Add((XElement)new("Root"));
 		else {
 			var currentSelection = processViewModel.SelectedItem.AutomationElement;
@@ -22,9 +22,9 @@ public class XmlElementDetailsExporter : IElementDetailsExporter {
 
 	private static XElement CreateBranch(XElement parent, AutomationElement automationElement, ProcessViewModel processViewModel, int depthMax, int depth = 0) {
 		var elementPatterns = processViewModel.GetElementPatterns(automationElement);
-		if (elementPatterns != null)
-			foreach (var elementPatternItem in elementPatterns.Where(x => x.IsVisible && x.Children != null))
-				AddPattern(parent, elementPatternItem, elementPatternItem.Children!, new() { { "Identification", "" }, { "Details", "" }, { "LegacyIAccessible", "" }, { "Window", "False" }, { "Pattern Support", "No" } }); // Where Children != null
+		if (elementPatterns is not null)
+			foreach (var elementPatternItem in elementPatterns.Where(x => x.IsVisible && x.Children is not null))
+				AddPattern(parent, elementPatternItem, elementPatternItem.Children!, new() { { "Identification", "" }, { "Details", "" }, { "LegacyIAccessible", "" }, { "Window", "False" }, { "Pattern Support", "No" } }); // Where Children is not null
 
 		if ((depth < depthMax || depthMax < 0) && automationElement.FindAllChildren() is AutomationElement[] childrenList && childrenList.Length >= 0)
 			AddChildren(parent, processViewModel, childrenList, depthMax, depth);
@@ -41,7 +41,7 @@ public class XmlElementDetailsExporter : IElementDetailsExporter {
 	private static void AddPattern(XElement parent, ElementPatternItem elementPatternItem, IEnumerable<PatternItem> patternItems, Dictionary<string, string>? blacklist)
 		=> AddXElement(parent,
 			() => new("pattern", new XAttribute("Name", elementPatternItem.PatternName)),
-			patternItems.Where(c => c.Value != null && (blacklist == null || !blacklist.ContainsKey(elementPatternItem.PatternIdName) || !blacklist[elementPatternItem.PatternIdName].Contains(c.Value))),
+			patternItems.Where(c => c.Value is not null && (blacklist is null || !blacklist.ContainsKey(elementPatternItem.PatternIdName) || !blacklist[elementPatternItem.PatternIdName].Contains(c.Value))),
 			(patternItem) => new("property",
 				new XAttribute("Name", patternItem.Key),
 				new XAttribute("Value", patternItem.Value ?? "")));

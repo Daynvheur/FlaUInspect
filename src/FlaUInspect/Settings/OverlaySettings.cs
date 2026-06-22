@@ -28,7 +28,7 @@ public class OverlaySettings : ObservableObject, ICloneable {
 	};
 
 	public void CopyTo(OverlaySettings? to) {
-		if (to == null)
+		if (to is null)
 			return;
 
 		to.Size = Size;

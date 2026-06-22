@@ -27,7 +27,7 @@ public static class TreeViewBringIntoViewBehavior {
 	}
 
 	private static void TreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e) {
-		if (sender is not TreeView treeView || e.NewValue == null)
+		if (sender is not TreeView treeView || e.NewValue is null)
 			return;
 
 		_ = treeView.Dispatcher.BeginInvoke(new Action(() => {
@@ -49,7 +49,7 @@ public static class TreeViewBringIntoViewBehavior {
 				tvi.IsExpanded = true;
 
 			var result = GetTreeViewItem(child, item);
-			if (result != null)
+			if (result is not null)
 				return result;
 		}
 

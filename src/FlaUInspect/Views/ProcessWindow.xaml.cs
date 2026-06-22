@@ -45,7 +45,7 @@ public partial class ProcessWindow : Window {
 	private async void InvokePatternActionHandler(object sender, RoutedEventArgs e) {
 		var vm = (sender as Button)?.DataContext as PatternItem;
 
-		if (vm?.Action != null)
+		if (vm?.Action is not null)
 			await Task.Run(vm.Action);
 	}
 

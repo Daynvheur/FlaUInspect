@@ -15,7 +15,7 @@ namespace FlaUInspect;
 
 public partial class App {
 
-	public static IServiceProvider Services { get; private set; } = null!;
+	public static IServiceProvider Services { get; private set; } = default!;
 	public static FlaUiAppOptions FlaUiAppOptions { get; } = new();
 
 	public static InternalLogger Logger { get; } = new();
@@ -57,13 +57,13 @@ public partial class App {
 	}
 
 	private static void SetOverlayOption(OverlaySettings? overlay, Action<Func<ElementOverlay?>> setter)
-		=> setter(overlay != null ? (() => new(overlay)) : FlaUiAppOptions.DefaultOverlay);
+		=> setter(overlay is not null ? (() => new(overlay)) : FlaUiAppOptions.DefaultOverlay);
 
 	private static void SetOverlayColors(FlaUiAppSettings settings) {
-		var pickColor = settings.PickOverlay != null
+		var pickColor = settings.PickOverlay is not null
 			? ColorTranslator.FromHtml(settings.PickOverlay.OverlayColor)
 			: Color.Blue;
-		var selectionColor = settings.SelectionOverlay != null
+		var selectionColor = settings.SelectionOverlay is not null
 			? ColorTranslator.FromHtml(settings.SelectionOverlay.OverlayColor)
 			: Color.Blue;
 
@@ -83,7 +83,7 @@ public partial class App {
 		for (var i = Current.Resources.MergedDictionaries.Count - 1; i >= 0; i--) {
 			var dict = Current.Resources.MergedDictionaries[i];
 
-			if (dict.Source != null && (dict.Source.OriginalString.Contains("Themes/DarkTheme.xaml") || dict.Source.OriginalString.Contains("Themes/LightTheme.xaml")))
+			if (dict.Source is not null && (dict.Source.OriginalString.Contains("Themes/DarkTheme.xaml") || dict.Source.OriginalString.Contains("Themes/LightTheme.xaml")))
 				Current.Resources.MergedDictionaries.RemoveAt(i);
 		}
 

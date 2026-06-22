@@ -167,7 +167,7 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 			else {
 				var topWindowUnderCursor = GetTopWindowUnderCursor();
 
-				if (_topWindowUnderCursor == null || !_topWindowUnderCursor.Equals(topWindowUnderCursor)) {
+				if (_topWindowUnderCursor is null || !_topWindowUnderCursor.Equals(topWindowUnderCursor)) {
 					_topWindowOverlay?.Dispose();
 					try {
 						var boundingRectangleValue = topWindowUnderCursor?.Properties.BoundingRectangle.Value ?? new();
@@ -175,7 +175,7 @@ public partial class StartupViewModel : ObservableObject, IDisposable {
 						_topWindowOverlay?.Show(boundingRectangleValue);
 						_topWindowUnderCursor = topWindowUnderCursor;
 
-						if (topWindowUnderCursor != null)
+						if (topWindowUnderCursor is not null)
 							SelectedProcess = Processes.FirstOrDefault(x => x.MainWindowHandle == topWindowUnderCursor.Properties.NativeWindowHandle);
 					}
 					catch {

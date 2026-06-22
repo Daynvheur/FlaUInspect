@@ -65,22 +65,22 @@ public class ControlTypeToIconConverter : MarkupExtension, IValueConverter {
 		var dictionaries = new List<ResourceDictionary>();
 
 		var currentApp = Application.Current;
-		if (currentApp?.Resources != null)
+		if (currentApp?.Resources is not null)
 			dictionaries.Add(currentApp.Resources);
 
-		if (currentApp?.Windows != null) {
+		if (currentApp?.Windows is not null) {
 			foreach (Window window in currentApp.Windows) {
-				if (window?.Resources == null)
+				if (window?.Resources is null)
 					continue;
 
 				foreach (var dict in window.Resources.MergedDictionaries) {
-					if (dict == null)
+					if (dict is null)
 						continue;
 
 					dictionaries.Add(dict);
 
 					foreach (var merged in dict.MergedDictionaries) {
-						if (merged != null)
+						if (merged is not null)
 							dictionaries.Add(merged);
 					}
 				}
@@ -88,7 +88,7 @@ public class ControlTypeToIconConverter : MarkupExtension, IValueConverter {
 		}
 
 		foreach (var dict in dictionaries) {
-			if (dict == null)
+			if (dict is null)
 				continue;
 
 			if (dict.Contains(key))

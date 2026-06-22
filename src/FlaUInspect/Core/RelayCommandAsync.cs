@@ -39,7 +39,7 @@ public class AsyncRelayCommand : ObservableObject, ICommand {
 	/// <summary>Defines the method to be called when the command is invoked. </summary>
 	async void ICommand.Execute(object? parameter) {
 		var task = _execute(parameter);
-		if (task == null)
+		if (task is null)
 			return;
 
 		IsRunning = true;

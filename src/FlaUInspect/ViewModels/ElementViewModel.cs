@@ -19,7 +19,7 @@ public class ElementViewModel : ObservableObject {
 
 		Name = (AutomationElement?.Properties.Name.ValueOrDefault ?? string.Empty).NormalizeString();
 		AutomationId = (AutomationElement?.Properties.AutomationId.ValueOrDefault ?? string.Empty).NormalizeString();
-		ControlType = AutomationElement != null && AutomationElement.Properties.ControlType.TryGetValue(out var value) ? value : ControlType.Unknown;
+		ControlType = AutomationElement is not null && AutomationElement.Properties.ControlType.TryGetValue(out var value) ? value : ControlType.Unknown;
 		Children = loadSubChildren > 0 ? LoadChildren(--loadSubChildren) : [];
 	}
 
@@ -43,14 +43,14 @@ public class ElementViewModel : ObservableObject {
 	public string AutomationId { get; }
 
 	public ControlType ControlType { get; }
-	public string XPath => AutomationElement == null ? string.Empty : Debug.GetXPathToElement(AutomationElement);
+	public string XPath => AutomationElement is null ? string.Empty : Debug.GetXPathToElement(AutomationElement);
 
 	public List<ElementViewModel> Children { get; private set; }
 
 	public override string ToString() => $"{Name} [{ControlType}] : {AutomationId}";
 
 	public List<ElementViewModel> LoadChildren(int loadSubChildren = 0) {
-		if (AutomationElement == null)
+		if (AutomationElement is null)
 			return [];
 
 		try {

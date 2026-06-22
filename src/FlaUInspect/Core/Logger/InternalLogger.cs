@@ -7,7 +7,7 @@ public sealed class InternalLogger : ILogger {
 	public ConcurrentBag<InternalLoggerMessage> Messages { get; } = [];
 
 	public void Log(LogLevel level, string? message, params object?[] args) {
-		if (message != null) {
+		if (message is not null) {
 			Messages.Add(new InternalLoggerMessage(level, string.Format(CultureInfo.InvariantCulture, message, args)));
 			OnLogEvent();
 		}

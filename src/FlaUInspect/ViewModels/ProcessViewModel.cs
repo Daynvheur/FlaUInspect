@@ -63,7 +63,7 @@ public partial class ProcessViewModel : ObservableObject {
 
 		RefreshCommand = new AsyncRelayCommand(async _ => await Task.Run(Initialize));
 		CaptureSelectedItemCommand = new RelayCommand(_ => {
-			if (SelectedItem?.AutomationElement == null)
+			if (SelectedItem?.AutomationElement is null)
 				return;
 
 			var capturedImage = SelectedItem.AutomationElement.Capture();
@@ -78,7 +78,7 @@ public partial class ProcessViewModel : ObservableObject {
 		});
 
 		CurrentElementSaveStateCommand = new RelayCommand(_ => {
-			if (SelectedItem?.AutomationElement == null)
+			if (SelectedItem?.AutomationElement is null)
 				return;
 
 			try {
@@ -99,7 +99,7 @@ public partial class ProcessViewModel : ObservableObject {
 		});
 
 		CopyDetailsToClipboardCommand = new RelayCommand(param => {
-			if (SelectedItem?.AutomationElement == null)
+			if (SelectedItem?.AutomationElement is null)
 				return;
 
 			try {
@@ -187,7 +187,7 @@ public partial class ProcessViewModel : ObservableObject {
 			return;
 		}
 
-		if (item.AutomationElement == null)
+		if (item.AutomationElement is null)
 			return;
 
 		_trackHighlighterOverlay?.Dispose();
@@ -279,7 +279,7 @@ public partial class ProcessViewModel : ObservableObject {
 	}
 
 	private ElementViewModel? FindElement(IEnumerable<ElementViewModel> viewModels, AutomationElement element) => viewModels.FirstOrDefault(el => {
-		if (el?.AutomationElement == null)
+		if (el?.AutomationElement is null)
 			return false;
 
 		try {
