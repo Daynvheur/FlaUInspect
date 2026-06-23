@@ -138,6 +138,12 @@ public partial class ProcessViewModel : ObservableObject {
 				_logger?.LogError(e.ToString());
 			}
 		});
+
+		ExpandCollapseAllCommand = new RelayCommand(_ => {
+			if (SelectedItem is null)
+				return;
+			ToggleExpandCollapse(SelectedItem);
+		});
 	}
 
 	public string? WindowTitle { get; }
@@ -203,6 +209,7 @@ public partial class ProcessViewModel : ObservableObject {
 	public ICommand CurrentElementSaveStateCommand { get; }
 	public ICommand CopyDetailsToClipboardCommand { get; }
 	public ICommand ExtractUIFromHereCommand { get; }
+	public ICommand ExpandCollapseAllCommand { get; }
 
 	public bool EnableFocusTrackingMode {
 		get => GetProperty<bool>();
@@ -438,6 +445,35 @@ public partial class ProcessViewModel : ObservableObject {
 		while (node is not null && node != parent);
 
 		return node is not null && node == parent;
+	}
+
+	private static void ToggleExpandCollapse(ElementViewModel element) {
+		bool hasCollapsedDescendant(ElementViewModel elem) =>
+			elem.Children.Any(c => !c.IsExpanded || hasCollapsedDescendant(c));
+
+		void ExpandAll(ElementViewModel elem) {
+			foreach (var child in elem.Children) {
+				child.IsExpanded = true;
+				ExpandAll(child);
+			}
+		}
+
+		void CollapseAll(ElementViewModel elem) {
+			foreach (var child in elem.Children) {
+				CollapseAll(child);
+				child.IsExpanded = false;
+			}
+		}
+
+		if (!element.IsExpanded) {
+			element.IsExpanded = true;
+		}
+		else if (hasCollapsedDescendant(element)) {
+			ExpandAll(element);
+		}
+		else {
+			CollapseAll(element);
+		}
 	}
 
 	[LibraryImport("user32.dll")]
