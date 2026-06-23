@@ -144,7 +144,13 @@ public partial class ProcessViewModel : ObservableObject {
 
 	public bool EnableXPath {
 		get => GetProperty<bool>();
-		set => SetProperty(value);
+		set {
+			if (!SetProperty(value))
+				return;
+
+			if (value && SelectedItem?.AutomationElement is not null)
+				SelectedItem.XPath = Debug.GetXPathToElement(SelectedItem.AutomationElement);
+		}
 	}
 
 	public ObservableCollection<ElementViewModel> Elements { get; private set; }
@@ -168,6 +174,10 @@ public partial class ProcessViewModel : ObservableObject {
 				TrackSelectedItem(value);
 
 			ReadPatternsForSelectedItem(value?.AutomationElement);
+
+			if (EnableXPath && value?.AutomationElement is not null) {
+				value.XPath = Debug.GetXPathToElement(value.AutomationElement);
+			}
 		}
 	}
 

@@ -43,11 +43,16 @@ public class ElementViewModel : ObservableObject {
 	public string AutomationId { get; }
 
 	public ControlType ControlType { get; }
-	public string XPath => AutomationElement is null ? string.Empty : Debug.GetXPathToElement(AutomationElement);
+
+	private string? _xpath;
+	public string XPath {
+		get => _xpath ?? string.Empty;
+		set => SetProperty(ref _xpath, value);
+	}
 
 	public List<ElementViewModel> Children { get; private set; }
 
-	public override string ToString() => $"{Name} [{ControlType}] : {AutomationId}";
+	public override string ToString() => $"{Name} [{ControlType}] : {AutomationId}{(string.IsNullOrEmpty(XPath) ? "" : $"{Environment.NewLine}XPath: {XPath}")}";
 
 	public List<ElementViewModel> LoadChildren(int loadSubChildren = 0) {
 		if (AutomationElement is null)
