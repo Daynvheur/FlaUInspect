@@ -43,11 +43,9 @@ public class ElementViewModel : ObservableObject {
 	public string AutomationId { get; }
 
 	public ControlType ControlType { get; }
-
-	private string? _xpath;
 	public string XPath {
-		get => _xpath ?? string.Empty;
-		set => SetProperty(ref _xpath, value);
+		get => field ?? string.Empty;
+		set => SetProperty(ref field, value);
 	}
 
 	public List<ElementViewModel> Children { get; private set; }
